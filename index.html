@@ -7,1023 +7,260 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OIC Board">
-<meta name="application-name" content="OIC Board">
 <meta name="theme-color" content="#0f1117">
-<meta name="description" content="OIC Task Board — PCA-ARC FPDD. Manage urgent, high priority and routine tasks offline.">
 <title>OIC Task Board — PCA-ARC</title>
-
-<!-- Inline PWA Manifest via base64 blob -->
 <link id="manifestLink" rel="manifest">
-
-<!-- Apple touch icon (inline SVG→PNG via canvas) -->
 <link rel="apple-touch-icon" id="appleIcon">
-
 <script>
-// ── Inline PWA Manifest ───────────────────────────────────────────
-(function() {
-  const manifest = {
-    name: "OIC Task Board — PCA-ARC",
-    short_name: "OIC Board",
-    description: "Manage urgent, high priority and routine tasks for your OIC. Works offline.",
-    start_url: "./",
-    display: "standalone",
-    background_color: "#0f1117",
-    theme_color: "#0f1117",
-    orientation: "portrait-primary",
-    icons: [
-      { src: generateIcon(192), sizes: "192x192", type: "image/png", purpose: "any maskable" },
-      { src: generateIcon(512), sizes: "512x512", type: "image/png", purpose: "any maskable" }
-    ]
-  };
-
-  function generateIcon(size) {
-    const canvas = document.createElement('canvas');
-    canvas.width = size; canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    // Background
-    ctx.fillStyle = '#0f1117';
-    ctx.fillRect(0, 0, size, size);
-    // Rounded rect accent
-    ctx.fillStyle = '#5b8dee';
-    const r = size * 0.18, x = size * 0.12, y = size * 0.12, w = size * 0.76, h = size * 0.76;
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath(); ctx.fill();
-    // Three priority dots
-    const dots = [['#ff4d4d', 0.32], ['#f5a623', 0.5], ['#3ecf8e', 0.68]];
-    dots.forEach(([color, yFrac]) => {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(size * 0.38, size * yFrac, size * 0.055, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.18)';
-      ctx.fillRect(size * 0.47, size * yFrac - size * 0.035, size * 0.25, size * 0.07);
+(function(){
+  var manifest={name:"OIC Task Board — PCA-ARC",short_name:"OIC Board",description:"Manage urgent, high priority and routine tasks. Works offline.",start_url:"./",display:"standalone",background_color:"#0f1117",theme_color:"#0f1117",orientation:"portrait-primary",icons:[]};
+  function genIcon(size){
+    var c=document.createElement('canvas');c.width=size;c.height=size;
+    var x=c.getContext('2d');
+    x.fillStyle='#0f1117';x.fillRect(0,0,size,size);
+    x.fillStyle='#5b8dee';var r=size*.18,m=size*.12,w=size*.76;
+    x.beginPath();x.moveTo(m+r,m);x.lineTo(m+w-r,m);x.quadraticCurveTo(m+w,m,m+w,m+r);
+    x.lineTo(m+w,m+w-r);x.quadraticCurveTo(m+w,m+w,m+w-r,m+w);
+    x.lineTo(m+r,m+w);x.quadraticCurveTo(m,m+w,m,m+w-r);
+    x.lineTo(m,m+r);x.quadraticCurveTo(m,m,m+r,m);x.closePath();x.fill();
+    [['#ff4d4d',.32],['#f5a623',.5],['#3ecf8e',.68]].forEach(function(d){
+      x.fillStyle=d[0];x.beginPath();x.arc(size*.38,size*d[1],size*.055,0,Math.PI*2);x.fill();
     });
-    return canvas.toDataURL('image/png');
+    return c.toDataURL('image/png');
   }
-
-  // Patch icons with real data URLs
-  const iconData = generateIcon(192);
-  manifest.icons[0].src = iconData;
-  manifest.icons[1].src = generateIcon(512);
-
-  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  document.getElementById('manifestLink').href = url;
-  document.getElementById('appleIcon').href = iconData;
+  var icon=genIcon(192);
+  manifest.icons=[{src:icon,sizes:"192x192",type:"image/png"},{src:genIcon(512),sizes:"512x512",type:"image/png"}];
+  var blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  document.getElementById('manifestLink').href=URL.createObjectURL(blob);
+  document.getElementById('appleIcon').href=icon;
 })();
 </script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
-
-  :root {
-    --bg: #0f1117;
-    --surface: #181c27;
-    --surface2: #1f2438;
-    --border: #2a2f45;
-    --urgent: #ff4d4d;
-    --urgent-dim: rgba(255,77,77,0.12);
-    --high: #f5a623;
-    --high-dim: rgba(245,166,35,0.12);
-    --routine: #3ecf8e;
-    --routine-dim: rgba(62,207,142,0.12);
-    --text: #e8eaf0;
-    --muted: #6b7280;
-    --accent: #5b8dee;
-    --accent-dim: rgba(91,141,238,0.15);
-    --online: #3ecf8e;
-    --offline: #ff4d4d;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Noise texture overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Header */
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(15,17,23,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-  }
-
-  .header-left {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-  }
-
-  .logo {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    color: var(--text);
-    letter-spacing: -0.5px;
-  }
-
-  .logo span {
-    color: var(--accent);
-  }
-
-  .tagline {
-    font-size: 11px;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.5px;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .status-pill {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 5px 12px;
-    border-radius: 100px;
-    font-size: 11px;
-    font-family: 'DM Mono', monospace;
-    font-weight: 500;
-    border: 1px solid var(--border);
-    transition: all 0.3s;
-  }
-
-  .status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-
-  .status-pill.online { border-color: var(--online); color: var(--online); }
-  .status-pill.online .status-dot { background: var(--online); }
-  .status-pill.offline { border-color: var(--offline); color: var(--offline); }
-  .status-pill.offline .status-dot { background: var(--offline); animation: none; }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  .sync-btn {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 7px 16px;
-    border-radius: 8px;
-    background: var(--accent-dim);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .sync-btn:hover { background: var(--accent); color: #fff; }
-  .sync-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .sync-btn svg { transition: transform 0.5s; }
-  .sync-btn.syncing svg { animation: spin 1s linear infinite; }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Main layout */
-  .main {
-    position: relative;
-    z-index: 1;
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 32px 24px;
-  }
-
-  /* Summary bar */
-  .summary-bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    transition: border-color 0.2s;
-  }
-
-  .stat-card:hover { border-color: var(--accent); }
-
-  .stat-label {
-    font-size: 11px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .stat-value {
-    font-family: 'DM Serif Display', serif;
-    font-size: 36px;
-    line-height: 1;
-  }
-
-  .stat-card.urgent .stat-value { color: var(--urgent); }
-  .stat-card.high .stat-value { color: var(--high); }
-  .stat-card.routine .stat-value { color: var(--routine); }
-  .stat-card.total .stat-value { color: var(--text); }
-
-  /* Add task form */
-  .add-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 28px;
-  }
-
-  .section-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 18px;
-    margin-bottom: 16px;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .section-title .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto auto;
-    gap: 12px;
-    align-items: end;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .form-group label {
-    font-size: 11px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    padding: 10px 14px;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: var(--accent);
-  }
-
-  .form-group select option { background: var(--surface); }
-
-  .form-row2 {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 12px;
-    margin-top: 12px;
-  }
-
-  .add-btn {
-    padding: 10px 24px;
-    background: var(--accent);
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    align-self: end;
-  }
-
-  .add-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-
-  /* Filter tabs */
-  .filter-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .filter-label {
-    font-size: 11px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    margin-right: 4px;
-  }
-
-  .filter-tab {
-    padding: 6px 16px;
-    border-radius: 100px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .filter-tab:hover { border-color: var(--accent); color: var(--accent); }
-  .filter-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .filter-tab.urgent.active { background: var(--urgent); border-color: var(--urgent); }
-  .filter-tab.high.active { background: var(--high); border-color: var(--high); }
-  .filter-tab.routine.active { background: var(--routine); border-color: var(--routine); }
-
-  /* Task columns */
-  .columns {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-
-  .column {
-    background: var(--surface);
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-  }
-
-  .col-header {
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .col-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 0.3px;
-  }
-
-  .col-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .col-icon {
-    font-size: 16px;
-  }
-
-  .column.urgent .col-header { background: var(--urgent-dim); border-bottom-color: rgba(255,77,77,0.2); }
-  .column.urgent .col-badge { background: var(--urgent-dim); color: var(--urgent); }
-  .column.urgent .col-title { color: var(--urgent); }
-
-  .column.high .col-header { background: var(--high-dim); border-bottom-color: rgba(245,166,35,0.2); }
-  .column.high .col-badge { background: var(--high-dim); color: var(--high); }
-  .column.high .col-title { color: var(--high); }
-
-  .column.routine .col-header { background: var(--routine-dim); border-bottom-color: rgba(62,207,142,0.2); }
-  .column.routine .col-badge { background: var(--routine-dim); color: var(--routine); }
-  .column.routine .col-title { color: var(--routine); }
-
-  .col-meta {
-    font-size: 11px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-  }
-
-  .col-tasks {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-height: 180px;
-    max-height: 520px;
-    overflow-y: auto;
-  }
-
-  .col-tasks::-webkit-scrollbar { width: 4px; }
-  .col-tasks::-webkit-scrollbar-track { background: transparent; }
-  .col-tasks::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-  /* Task card */
-  .task-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    position: relative;
-    transition: all 0.2s;
-    animation: slideIn 0.3s ease;
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .task-card:hover { border-color: var(--accent); transform: translateX(2px); }
-
-  .task-card.done {
-    opacity: 0.5;
-  }
-
-  .task-card.done .task-title {
-    text-decoration: line-through;
-    color: var(--muted);
-  }
-
-  .task-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .task-title {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.4;
-    flex: 1;
-  }
-
-  .task-actions {
-    display: flex;
-    gap: 4px;
-    opacity: 1;
-  }
-
-  .task-action-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    transition: all 0.15s;
-  }
-
-  .task-action-btn:hover { background: var(--surface); color: var(--text); }
-  .task-action-btn.done-btn:hover { background: var(--routine-dim); color: var(--routine); border-color: var(--routine); }
-  .task-action-btn.del-btn:hover { background: var(--urgent-dim); color: var(--urgent); border-color: var(--urgent); }
-
-  .task-note {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-bottom: 10px;
-    font-style: italic;
-  }
-
-  .task-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .task-deadline {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .task-deadline.overdue { color: var(--urgent); }
-  .task-deadline.soon { color: var(--high); }
-
-  .task-synced {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 100px;
-    border: 1px solid;
-  }
-
-  .task-synced.synced { color: var(--routine); border-color: rgba(62,207,142,0.3); }
-  .task-synced.pending { color: var(--high); border-color: rgba(245,166,35,0.3); }
-
-  .empty-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 40px 20px;
-    color: var(--muted);
-    font-size: 13px;
-    font-style: italic;
-  }
-
-  .empty-icon { font-size: 32px; opacity: 0.3; }
-
-  /* Toast */
-  .toast-container {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .toast {
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-family: 'DM Mono', monospace;
-    border: 1px solid;
-    animation: toastIn 0.3s ease;
-    backdrop-filter: blur(12px);
-  }
-
-  @keyframes toastIn {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-
-  .toast.success { background: rgba(62,207,142,0.1); border-color: var(--routine); color: var(--routine); }
-  .toast.error { background: rgba(255,77,77,0.1); border-color: var(--urgent); color: var(--urgent); }
-  .toast.info { background: rgba(91,141,238,0.1); border-color: var(--accent); color: var(--accent); }
-
-  /* Sync log */
-  .sync-log-section {
-    margin-top: 32px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-
-  .sync-log-header {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .sync-log-title {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .sync-log-clear {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 3px 8px;
-    border-radius: 4px;
-    transition: all 0.2s;
-  }
-
-  .sync-log-clear:hover { color: var(--urgent); background: var(--urgent-dim); }
-
-  .sync-log-entries {
-    padding: 12px 20px;
-    max-height: 180px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .log-entry {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    gap: 12px;
-  }
-
-  .log-time { color: var(--accent); flex-shrink: 0; }
-
-  /* Modal */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    z-index: 500;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px;
-    width: 90%;
-    max-width: 480px;
-    animation: modalIn 0.25s ease;
-  }
-
-  @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.96) translateY(8px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
-
-  .modal-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    margin-bottom: 6px;
-  }
-
-  .modal-sub {
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 20px;
-  }
-
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
-  }
-
-  .btn-cancel {
-    padding: 9px 20px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-cancel:hover { border-color: var(--text); color: var(--text); }
-
-  .btn-save {
-    padding: 9px 20px;
-    border-radius: 8px;
-    border: none;
-    background: var(--accent);
-    color: #fff;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-save:hover { opacity: 0.85; }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .columns { grid-template-columns: 1fr; }
-    .form-grid { grid-template-columns: 1fr 1fr; }
-    .summary-bar { grid-template-columns: repeat(2, 1fr); }
-    .header { padding: 0 16px; }
-    .main { padding: 20px 12px; }
-  }
-
-  @media (max-width: 540px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .form-row2 { grid-template-columns: 1fr; }
-    .summary-bar { grid-template-columns: repeat(2, 1fr); }
-  }
-
-  /* ── Chat Panel ─────────────────────────────────────────── */
-  .chat-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-    z-index: 600; align-items: flex-end; justify-content: flex-end;
-  }
-  .chat-overlay.open { display: flex; }
-  .chat-panel {
-    background: var(--surface); border-left: 1px solid var(--border);
-    border-top: 1px solid var(--border); width: 420px; max-width: 100vw;
-    height: 100vh; display: flex; flex-direction: column;
-    animation: slideFromRight 0.28s ease;
-  }
-  @keyframes slideFromRight {
-    from { transform: translateX(40px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  .chat-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); background: var(--surface2); flex-shrink: 0; }
-  .chat-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
-  .chat-task-title { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.3; flex: 1; }
-  .chat-close { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
-  .chat-close:hover { background: var(--urgent-dim); color: var(--urgent); border-color: var(--urgent); }
-  .chat-task-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .chat-priority-badge { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 100px; border: 1px solid; text-transform: uppercase; letter-spacing: 0.5px; }
-  .chat-priority-badge.urgent { color: var(--urgent); border-color: rgba(255,77,77,0.3); background: var(--urgent-dim); }
-  .chat-priority-badge.high { color: var(--high); border-color: rgba(245,166,35,0.3); background: var(--high-dim); }
-  .chat-priority-badge.routine { color: var(--routine); border-color: rgba(62,207,142,0.3); background: var(--routine-dim); }
-  .chat-assignee-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-  .chat-sender-bar { padding: 10px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: var(--bg); flex-shrink: 0; }
-  .chat-sender-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
-  .chat-sender-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 6px 10px; outline: none; }
-  .chat-sender-input:focus { border-color: var(--accent); }
-  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-  .chat-messages::-webkit-scrollbar { width: 4px; }
-  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-  .chat-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; font-style: italic; padding: 40px 0; }
-  .chat-empty-icon { font-size: 36px; opacity: 0.25; }
-  .chat-msg { display: flex; flex-direction: column; gap: 3px; animation: msgIn 0.2s ease; max-width: 88%; }
-  @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  .chat-msg.self { align-self: flex-end; align-items: flex-end; }
-  .chat-msg.other { align-self: flex-start; align-items: flex-start; }
-  .chat-msg-meta { display: flex; align-items: center; gap: 6px; }
-  .chat-msg-sender { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); font-weight: 500; }
-  .chat-msg.other .chat-msg-sender { color: var(--routine); }
-  .chat-msg-time { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
-  .chat-bubble { padding: 10px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; word-break: break-word; }
-  .chat-msg.self .chat-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
-  .chat-msg.other .chat-bubble { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
-  .chat-msg-del { font-size: 10px; color: var(--muted); background: transparent; border: none; cursor: pointer; padding: 0 4px; transition: color 0.2s; align-self: center; }
-  .chat-msg-del:hover { color: var(--urgent); }
-  .chat-status-msg { align-self: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 100px; padding: 4px 12px; text-align: center; }
-  .chat-input-area { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--surface2); flex-shrink: 0; }
-  .chat-input-row { display: flex; gap: 10px; align-items: flex-end; }
-  .chat-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px 14px; resize: none; outline: none; max-height: 120px; min-height: 42px; transition: border-color 0.2s; line-height: 1.4; }
-  .chat-input:focus { border-color: var(--accent); }
-  .chat-send-btn { width: 42px; height: 42px; border-radius: 12px; border: none; background: var(--accent); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
-  .chat-send-btn:hover { opacity: 0.85; transform: scale(1.05); }
-  .chat-send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
-  .chat-btn-wrap { position: relative; display: inline-flex; }
-  .unread-badge { position: absolute; top: -5px; right: -5px; background: var(--urgent); color: #fff; font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 700; border-radius: 100px; padding: 1px 4px; min-width: 14px; text-align: center; line-height: 1.4; pointer-events: none; }
-  .task-action-btn.chat-btn { color: var(--accent); border-color: rgba(91,141,238,0.4); background: rgba(91,141,238,0.08); }
-  @media (max-width: 600px) { .chat-panel { width: 100vw; } }
-
-
-  /* ── Audit / History Log ────────────────────────────────── */
-  .tabs-row {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 0;
-  }
-  .tab-btn {
-    padding: 11px 20px;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-  }
-  .tab-btn:hover { color: var(--text); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  .log-panel { display: none; }
-  .log-panel.active { display: block; }
-
-  .audit-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .audit-filters {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .audit-filter-btn {
-    padding: 4px 12px;
-    border-radius: 100px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .audit-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .audit-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-  .audit-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .export-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--routine);
-    background: var(--routine-dim);
-    color: var(--routine);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .export-btn:hover { background: var(--routine); color: #000; }
-
-  .clear-audit-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .clear-audit-btn:hover { border-color: var(--urgent); color: var(--urgent); background: var(--urgent-dim); }
-
-  .audit-entries {
-    max-height: 340px;
-    overflow-y: auto;
-    padding: 8px 0;
-  }
-  .audit-entries::-webkit-scrollbar { width: 4px; }
-  .audit-entries::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-  .audit-entry {
-    display: grid;
-    grid-template-columns: 140px 80px 1fr auto;
-    gap: 12px;
-    align-items: start;
-    padding: 10px 20px;
-    border-bottom: 1px solid rgba(42,47,69,0.5);
-    transition: background 0.15s;
-    font-size: 13px;
-  }
-  .audit-entry:hover { background: var(--surface2); }
-  .audit-entry:last-child { border-bottom: none; }
-
-  .audit-time {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  .audit-type {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 6px;
-    text-align: center;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  .audit-type.created { background: rgba(91,141,238,0.15); color: var(--accent); }
-  .audit-type.resolved { background: var(--routine-dim); color: var(--routine); }
-  .audit-type.reopened { background: rgba(245,166,35,0.15); color: var(--high); }
-  .audit-type.edited { background: rgba(245,166,35,0.12); color: var(--high); }
-  .audit-type.deleted { background: var(--urgent-dim); color: var(--urgent); }
-  .audit-type.message { background: rgba(91,141,238,0.08); color: var(--accent); }
-
-  .audit-detail {
-    color: var(--text);
-    font-size: 13px;
-    line-height: 1.5;
-  }
-  .audit-detail .task-ref {
-    font-weight: 600;
-    color: var(--text);
-  }
-  .audit-detail .by-who {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    margin-left: 6px;
-  }
-  .audit-detail .priority-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-  .priority-tag.urgent { background: var(--urgent-dim); color: var(--urgent); }
-  .priority-tag.high { background: var(--high-dim); color: var(--high); }
-  .priority-tag.routine { background: var(--routine-dim); color: var(--routine); }
-
-  .audit-empty {
-    padding: 48px 20px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-    font-style: italic;
-  }
-
-  .audit-count {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  @media (max-width: 600px) {
-    .audit-entry {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto;
-    }
-    .audit-detail { grid-column: 1 / -1; }
-    .audit-actions { flex-wrap: wrap; }
-  }
-
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+:root{
+  --bg:#0f1117;--surface:#181c27;--surface2:#1f2438;--border:#2a2f45;
+  --urgent:#ff4d4d;--urgent-dim:rgba(255,77,77,0.12);
+  --high:#f5a623;--high-dim:rgba(245,166,35,0.12);
+  --routine:#3ecf8e;--routine-dim:rgba(62,207,142,0.12);
+  --text:#e8eaf0;--muted:#6b7280;--accent:#5b8dee;--accent-dim:rgba(91,141,238,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.logo{font-family:'DM Serif Display',serif;font-size:22px;letter-spacing:-0.5px;}
+.logo span{color:var(--accent);}
+.tagline{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-left:10px;}
+.header-left{display:flex;align-items:baseline;gap:4px;}
+.header-right{display:flex;align-items:center;gap:16px;}
+.status-pill{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:100px;font-size:11px;font-family:'DM Mono',monospace;border:1px solid var(--border);transition:all .3s;}
+.status-dot{width:7px;height:7px;border-radius:50%;animation:pulse 2s infinite;}
+.status-pill.online{border-color:var(--routine);color:var(--routine);}
+.status-pill.online .status-dot{background:var(--routine);}
+.status-pill.offline{border-color:var(--urgent);color:var(--urgent);}
+.status-pill.offline .status-dot{background:var(--urgent);animation:none;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.sync-btn{display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:8px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all .2s;}
+.sync-btn:hover{background:var(--accent);color:#fff;}
+.sync-btn:disabled{opacity:.4;cursor:not-allowed;}
+.sync-btn.syncing svg{animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* Main */
+.main{max-width:1280px;margin:0 auto;padding:28px 20px;}
+/* Summary */
+.summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;}
+.stat-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.stat-value{font-family:'DM Serif Display',serif;font-size:36px;line-height:1;}
+.stat-card.urgent .stat-value{color:var(--urgent);}
+.stat-card.high .stat-value{color:var(--high);}
+.stat-card.routine .stat-value{color:var(--routine);}
+/* Add section */
+.add-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;}
+.section-title{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.section-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-full{grid-column:1/-1;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group label{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+.form-group input,.form-group select{background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent);}
+.form-group select option{background:var(--surface);}
+.add-btn{padding:11px 28px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:all .2s;margin-top:14px;}
+.add-btn:hover{opacity:.85;}
+/* Filters */
+.filter-row{display:flex;gap:8px;margin-bottom:20px;align-items:center;flex-wrap:wrap;}
+.filter-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);}
+.filter-tab{padding:6px 14px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all .2s;}
+.filter-tab:hover{border-color:var(--accent);color:var(--accent);}
+.filter-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+/* Columns */
+.columns{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.column{background:var(--surface);border-radius:16px;border:1px solid var(--border);overflow:hidden;}
+.col-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.col-title{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;}
+.col-badge{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;}
+.col-meta{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);}
+.column.urgent .col-header{background:var(--urgent-dim);}
+.column.urgent .col-badge{background:var(--urgent-dim);color:var(--urgent);}
+.column.urgent .col-title{color:var(--urgent);}
+.column.high .col-header{background:var(--high-dim);}
+.column.high .col-badge{background:var(--high-dim);color:var(--high);}
+.column.high .col-title{color:var(--high);}
+.column.routine .col-header{background:var(--routine-dim);}
+.column.routine .col-badge{background:var(--routine-dim);color:var(--routine);}
+.column.routine .col-title{color:var(--routine);}
+.col-tasks{padding:10px;display:flex;flex-direction:column;gap:10px;min-height:160px;max-height:520px;overflow-y:auto;}
+.col-tasks::-webkit-scrollbar{width:4px;}
+.col-tasks::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+/* Task card */
+.task-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px;transition:all .2s;animation:slideIn .3s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.task-card:hover{border-color:var(--accent);}
+.task-card.done{opacity:.5;}
+.task-card.done .task-title{text-decoration:line-through;color:var(--muted);}
+.task-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.task-title{font-size:14px;font-weight:500;line-height:1.4;flex:1;}
+.task-actions{display:flex;gap:5px;flex-shrink:0;}
+.task-btn{min-width:30px;height:30px;padding:0 6px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;}
+.task-btn:hover{background:var(--surface);color:var(--text);}
+.task-btn.done-btn:hover{background:var(--routine-dim);color:var(--routine);border-color:var(--routine);}
+.task-btn.del-btn:hover{background:var(--urgent-dim);color:var(--urgent);border-color:var(--urgent);}
+.task-btn.chat-btn{color:var(--accent);border-color:rgba(91,141,238,.4);background:rgba(91,141,238,.08);}
+.task-btn.chat-btn:hover{background:var(--accent);color:#fff;}
+.chat-wrap{position:relative;display:inline-flex;}
+.unread-badge{position:absolute;top:-5px;right:-5px;background:var(--urgent);color:#fff;font-family:'DM Mono',monospace;font-size:9px;font-weight:700;border-radius:100px;padding:1px 4px;min-width:14px;text-align:center;pointer-events:none;}
+.task-note{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;font-style:italic;}
+.task-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.task-deadline{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.task-deadline.overdue{color:var(--urgent);}
+.task-deadline.soon{color:var(--high);}
+.task-synced{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:100px;border:1px solid;}
+.task-synced.synced{color:var(--routine);border-color:rgba(62,207,142,.3);}
+.task-synced.pending{color:var(--high);border-color:rgba(245,166,35,.3);}
+.col-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:36px 20px;color:var(--muted);font-size:13px;font-style:italic;}
+/* Edit Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:90%;max-width:480px;animation:modalIn .25s ease;}
+@keyframes modalIn{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:scale(1);}}
+.modal-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.btn-cancel{padding:9px 20px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;}
+.btn-cancel:hover{color:var(--text);border-color:var(--text);}
+.btn-save{padding:9px 20px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;}
+.btn-save:hover{opacity:.85;}
+/* Chat Panel */
+.chat-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:600;justify-content:flex-end;}
+.chat-overlay.open{display:flex;}
+.chat-panel{background:var(--surface);border-left:1px solid var(--border);width:420px;max-width:100vw;height:100vh;display:flex;flex-direction:column;animation:slideRight .28s ease;}
+@keyframes slideRight{from{transform:translateX(40px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.chat-head{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.chat-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px;}
+.chat-task-title{font-family:'DM Serif Display',serif;font-size:17px;line-height:1.3;flex:1;}
+.chat-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.chat-close:hover{background:var(--urgent-dim);color:var(--urgent);border-color:var(--urgent);}
+.chat-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.chat-badge{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:100px;border:1px solid;text-transform:uppercase;}
+.chat-badge.urgent{color:var(--urgent);border-color:rgba(255,77,77,.3);background:var(--urgent-dim);}
+.chat-badge.high{color:var(--high);border-color:rgba(245,166,35,.3);background:var(--high-dim);}
+.chat-badge.routine{color:var(--routine);border-color:rgba(62,207,142,.3);background:var(--routine-dim);}
+.chat-assignee{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.sender-bar{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg);}
+.sender-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
+.sender-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;outline:none;}
+.sender-input:focus{border-color:var(--accent);}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.chat-msgs::-webkit-scrollbar{width:4px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.chat-empty-msg{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:13px;font-style:italic;padding:40px 0;}
+.msg-wrap{display:flex;flex-direction:column;gap:3px;max-width:86%;}
+.msg-wrap.self{align-self:flex-end;align-items:flex-end;}
+.msg-wrap.other{align-self:flex-start;align-items:flex-start;}
+.msg-meta{display:flex;align-items:center;gap:6px;}
+.msg-sender{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;}
+.msg-wrap.self .msg-sender{color:var(--accent);}
+.msg-wrap.other .msg-sender{color:var(--routine);}
+.msg-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.msg-bubble{padding:10px 14px;border-radius:14px;font-size:13.5px;line-height:1.5;word-break:break-word;}
+.msg-wrap.self .msg-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:4px;}
+.msg-wrap.other .msg-bubble{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px;}
+.msg-del{font-size:10px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:0 4px;transition:color .2s;}
+.msg-del:hover{color:var(--urgent);}
+.chat-date-sep{align-self:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:3px 12px;}
+.chat-input-area{padding:12px 16px;border-top:1px solid var(--border);background:var(--surface2);}
+.chat-input-row{display:flex;gap:10px;align-items:flex-end;}
+.chat-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;resize:none;outline:none;max-height:120px;min-height:42px;line-height:1.4;transition:border-color .2s;}
+.chat-input:focus{border-color:var(--accent);}
+.chat-send{width:42px;height:42px;border-radius:12px;border:none;background:var(--accent);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.chat-send:hover{opacity:.85;}
+/* Log tabs */
+.log-section{margin-top:28px;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.tabs-row{display:flex;border-bottom:1px solid var(--border);}
+.tab-btn{padding:11px 20px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all .2s;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.log-panel{display:none;}
+.log-panel.active{display:block;}
+/* Audit */
+.audit-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap;}
+.audit-filters{display:flex;gap:6px;flex-wrap:wrap;}
+.af-btn{padding:4px 12px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;}
+.af-btn:hover{border-color:var(--accent);color:var(--accent);}
+.af-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.audit-actions{display:flex;gap:8px;align-items:center;}
+.audit-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.export-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid var(--routine);background:var(--routine-dim);color:var(--routine);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;}
+.export-btn:hover{background:var(--routine);color:#000;}
+.clear-btn2{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;}
+.clear-btn2:hover{border-color:var(--urgent);color:var(--urgent);background:var(--urgent-dim);}
+.audit-list{max-height:320px;overflow-y:auto;}
+.audit-list::-webkit-scrollbar{width:4px;}
+.audit-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.audit-row{display:grid;grid-template-columns:130px 80px 1fr;gap:12px;align-items:start;padding:10px 16px;border-bottom:1px solid rgba(42,47,69,.5);font-size:13px;transition:background .15s;}
+.audit-row:hover{background:var(--surface2);}
+.audit-row:last-child{border-bottom:none;}
+.audit-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.5;}
+.audit-type{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:6px;font-weight:500;text-align:center;}
+.audit-type.created{background:rgba(91,141,238,.15);color:var(--accent);}
+.audit-type.resolved{background:var(--routine-dim);color:var(--routine);}
+.audit-type.reopened{background:var(--high-dim);color:var(--high);}
+.audit-type.edited{background:var(--high-dim);color:var(--high);}
+.audit-type.deleted{background:var(--urgent-dim);color:var(--urgent);}
+.audit-type.message{background:rgba(91,141,238,.08);color:var(--accent);}
+.audit-detail{line-height:1.5;}
+.audit-task{font-weight:600;}
+.audit-who{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);margin-left:6px;}
+.audit-note{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
+.ptag{font-family:'DM Mono',monospace;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;}
+.ptag.urgent{background:var(--urgent-dim);color:var(--urgent);}
+.ptag.high{background:var(--high-dim);color:var(--high);}
+.ptag.routine{background:var(--routine-dim);color:var(--routine);}
+.audit-empty{padding:40px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;}
+/* Sync log */
+.sync-log-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sync-log-title{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.clear-btn3{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:3px 8px;border-radius:4px;transition:all .2s;}
+.clear-btn3:hover{color:var(--urgent);background:var(--urgent-dim);}
+.sync-log-entries{padding:10px 16px;max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+.log-entry{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);display:flex;gap:12px;}
+.log-time{color:var(--accent);flex-shrink:0;}
+/* Toast */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:10px;}
+.toast{padding:12px 20px;border-radius:10px;font-size:13px;font-family:'DM Mono',monospace;border:1px solid;animation:toastIn .3s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.toast.success{background:rgba(62,207,142,.1);border-color:var(--routine);color:var(--routine);}
+.toast.error{background:rgba(255,77,77,.1);border-color:var(--urgent);color:var(--urgent);}
+.toast.info{background:rgba(91,141,238,.1);border-color:var(--accent);color:var(--accent);}
+/* Responsive */
+@media(max-width:900px){.columns{grid-template-columns:1fr;}.summary-bar{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}.chat-panel{width:100vw;}.audit-row{grid-template-columns:1fr 1fr;}.audit-detail{grid-column:1/-1;}}
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <header class="header">
   <div class="header-left">
     <div class="logo">OIC<span>Board</span></div>
@@ -1035,44 +272,27 @@
       <span id="statusText">Checking…</span>
     </div>
     <button class="sync-btn" id="syncBtn" onclick="manualSync()">
-      <svg id="syncIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>
-      </svg>
+      <svg id="syncIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
       Sync Now
     </button>
   </div>
 </header>
 
-<!-- Main -->
 <main class="main">
 
-  <!-- Summary -->
   <div class="summary-bar">
-    <div class="stat-card urgent">
-      <div class="stat-label">🔴 Urgent</div>
-      <div class="stat-value" id="countUrgent">0</div>
-    </div>
-    <div class="stat-card high">
-      <div class="stat-label">🟠 High Priority</div>
-      <div class="stat-value" id="countHigh">0</div>
-    </div>
-    <div class="stat-card routine">
-      <div class="stat-label">🟢 Routine</div>
-      <div class="stat-value" id="countRoutine">0</div>
-    </div>
-    <div class="stat-card total">
-      <div class="stat-label">📋 Total Active</div>
-      <div class="stat-value" id="countTotal">0</div>
-    </div>
+    <div class="stat-card urgent"><div class="stat-label">🔴 Urgent</div><div class="stat-value" id="countUrgent">0</div></div>
+    <div class="stat-card high"><div class="stat-label">🟠 High Priority</div><div class="stat-value" id="countHigh">0</div></div>
+    <div class="stat-card routine"><div class="stat-label">🟢 Routine</div><div class="stat-value" id="countRoutine">0</div></div>
+    <div class="stat-card"><div class="stat-label">📋 Total Active</div><div class="stat-value" id="countTotal">0</div></div>
   </div>
 
-  <!-- Add Task -->
   <div class="add-section">
-    <div class="section-title"><div class="dot"></div> Add Task for OIC</div>
+    <div class="section-title"><div class="dot"></div>Add Task for OIC</div>
     <div class="form-grid">
-      <div class="form-group" style="grid-column: 1 / -1">
+      <div class="form-group form-full">
         <label>Task / Action Item</label>
-        <input type="text" id="taskTitle" placeholder="Describe the task or directive…" />
+        <input type="text" id="taskTitle" placeholder="Describe the task or directive…">
       </div>
       <div class="form-group">
         <label>Priority Level</label>
@@ -1084,108 +304,83 @@
       </div>
       <div class="form-group">
         <label>Deadline</label>
-        <input type="date" id="taskDeadline" />
+        <input type="date" id="taskDeadline">
       </div>
-    </div>
-    <div class="form-row2">
       <div class="form-group">
         <label>Notes / Instructions for OIC</label>
-        <input type="text" id="taskNote" placeholder="Optional: context, action required, dependencies…" />
+        <input type="text" id="taskNote" placeholder="Context, action required…">
       </div>
       <div class="form-group">
         <label>Assigned To</label>
-        <input type="text" id="taskAssignee" placeholder="Name or unit" />
+        <input type="text" id="taskAssignee" placeholder="Name or unit">
       </div>
     </div>
-    <div style="display:flex; justify-content:flex-end; margin-top:14px;">
-      <button class="add-btn" onclick="addTask()">+ Add Task</button>
-    </div>
+    <button class="add-btn" onclick="addTask()">+ Add Task</button>
   </div>
 
-  <!-- Filter row -->
   <div class="filter-row">
     <span class="filter-label">FILTER:</span>
-    <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
-    <button class="filter-tab urgent" onclick="setFilter('urgent', this)">Urgent</button>
-    <button class="filter-tab high" onclick="setFilter('high', this)">High Priority</button>
-    <button class="filter-tab routine" onclick="setFilter('routine', this)">Routine</button>
-    <button class="filter-tab" onclick="setFilter('pending', this)">⏳ Pending Sync</button>
-    <button class="filter-tab" onclick="setFilter('done', this)">✅ Done</button>
+    <button class="filter-tab active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-tab" onclick="setFilter('urgent',this)">Urgent</button>
+    <button class="filter-tab" onclick="setFilter('high',this)">High Priority</button>
+    <button class="filter-tab" onclick="setFilter('routine',this)">Routine</button>
+    <button class="filter-tab" onclick="setFilter('pending',this)">⏳ Pending</button>
+    <button class="filter-tab" onclick="setFilter('done',this)">✅ Done</button>
   </div>
 
-  <!-- Task columns -->
   <div class="columns">
     <div class="column urgent">
       <div class="col-header">
-        <div class="col-title">
-          <span class="col-icon">🔴</span>
-          Urgent
-          <div class="col-badge" id="badgeUrgent">0</div>
-        </div>
+        <div class="col-title">🔴 Urgent <div class="col-badge" id="badgeUrgent">0</div></div>
         <div class="col-meta">Act immediately</div>
       </div>
       <div class="col-tasks" id="colUrgent"></div>
     </div>
     <div class="column high">
       <div class="col-header">
-        <div class="col-title">
-          <span class="col-icon">🟠</span>
-          High Priority
-          <div class="col-badge" id="badgeHigh">0</div>
-        </div>
-        <div class="col-meta">Within the day/week</div>
+        <div class="col-title">🟠 High Priority <div class="col-badge" id="badgeHigh">0</div></div>
+        <div class="col-meta">Within day/week</div>
       </div>
       <div class="col-tasks" id="colHigh"></div>
     </div>
     <div class="column routine">
       <div class="col-header">
-        <div class="col-title">
-          <span class="col-icon">🟢</span>
-          Routine
-          <div class="col-badge" id="badgeRoutine">0</div>
-        </div>
+        <div class="col-title">🟢 Routine <div class="col-badge" id="badgeRoutine">0</div></div>
         <div class="col-meta">Standard workflow</div>
       </div>
       <div class="col-tasks" id="colRoutine"></div>
     </div>
   </div>
 
-  <!-- Log panels -->
-  <div class="sync-log-section" style="margin-top:32px">
+  <div class="log-section">
     <div class="tabs-row">
-      <button class="tab-btn active" onclick="switchTab('audit', this)">📋 Task History</button>
-      <button class="tab-btn" onclick="switchTab('sync', this)">📡 Sync Log</button>
+      <button class="tab-btn active" onclick="switchTab('audit',this)">📋 Task History</button>
+      <button class="tab-btn" onclick="switchTab('sync',this)">📡 Sync Log</button>
     </div>
-
-    <!-- Audit Log Panel -->
     <div class="log-panel active" id="panelAudit">
       <div class="audit-toolbar">
         <div class="audit-filters">
-          <button class="audit-filter-btn active" onclick="setAuditFilter('all', this)">All</button>
-          <button class="audit-filter-btn" onclick="setAuditFilter('created', this)">➕ Created</button>
-          <button class="audit-filter-btn" onclick="setAuditFilter('resolved', this)">✅ Resolved</button>
-          <button class="audit-filter-btn" onclick="setAuditFilter('edited', this)">✎ Edited</button>
-          <button class="audit-filter-btn" onclick="setAuditFilter('deleted', this)">🗑 Deleted</button>
-          <button class="audit-filter-btn" onclick="setAuditFilter('message', this)">💬 Messages</button>
+          <button class="af-btn active" onclick="setAuditFilter('all',this)">All</button>
+          <button class="af-btn" onclick="setAuditFilter('created',this)">➕ Created</button>
+          <button class="af-btn" onclick="setAuditFilter('resolved',this)">✅ Resolved</button>
+          <button class="af-btn" onclick="setAuditFilter('edited',this)">✎ Edited</button>
+          <button class="af-btn" onclick="setAuditFilter('deleted',this)">🗑 Deleted</button>
+          <button class="af-btn" onclick="setAuditFilter('message',this)">💬 Messages</button>
         </div>
         <div class="audit-actions">
           <span class="audit-count" id="auditCount">0 entries</span>
-          <button class="export-btn" onclick="exportAuditCSV()">⬇ Export CSV</button>
-          <button class="clear-audit-btn" onclick="clearAuditLog()">Clear</button>
+          <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+          <button class="clear-btn2" onclick="clearAudit()">Clear</button>
         </div>
       </div>
-      <div class="audit-entries" id="auditEntries">
-        <div class="audit-empty">No task history yet. Start adding tasks!</div>
-      </div>
+      <div class="audit-list" id="auditList"><div class="audit-empty">No task history yet.</div></div>
     </div>
-
-    <!-- Sync Log Panel -->
     <div class="log-panel" id="panelSync">
-      <div class="sync-log-header" style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div class="sync-log-head">
         <div class="sync-log-title">📡 Sync Activity Log</div>
-        <button class="sync-log-clear" onclick="clearLog()">Clear</button>
+        <button class="clear-btn3" onclick="clearLog()">Clear</button>
       </div>
-      <div class="sync-log-entries" id="syncLog" style="padding:12px 20px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+      <div class="sync-log-entries" id="syncLog">
         <div class="log-entry"><span class="log-time">—</span><span>No sync activity yet.</span></div>
       </div>
     </div>
@@ -1193,17 +388,17 @@
 
 </main>
 
-<!-- Edit modal -->
+<!-- Edit Modal -->
 <div class="modal-overlay" id="editModal">
   <div class="modal">
     <div class="modal-title">Edit Task</div>
     <div class="modal-sub">Update task details below.</div>
-    <input type="hidden" id="editId" />
+    <input type="hidden" id="editId">
     <div class="form-group" style="margin-bottom:12px">
       <label>Task Title</label>
-      <input type="text" id="editTitle" />
+      <input type="text" id="editTitle">
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <div class="modal-grid">
       <div class="form-group">
         <label>Priority</label>
         <select id="editPriority">
@@ -1214,16 +409,16 @@
       </div>
       <div class="form-group">
         <label>Deadline</label>
-        <input type="date" id="editDeadline" />
+        <input type="date" id="editDeadline">
       </div>
     </div>
     <div class="form-group" style="margin-bottom:12px">
       <label>Notes</label>
-      <input type="text" id="editNote" />
+      <input type="text" id="editNote">
     </div>
     <div class="form-group">
       <label>Assigned To</label>
-      <input type="text" id="editAssignee" />
+      <input type="text" id="editAssignee">
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -1232,766 +427,546 @@
   </div>
 </div>
 
-
 <!-- Chat Panel -->
-<div class="chat-overlay" id="chatOverlay" onclick="handleOverlayClick(event)">
-  <div class="chat-panel" id="chatPanel">
-    <div class="chat-header">
-      <div class="chat-header-top">
-        <div class="chat-task-title" id="chatTaskTitle">Task</div>
+<div class="chat-overlay" id="chatOverlay" onclick="overlayClick(event)">
+  <div class="chat-panel">
+    <div class="chat-head">
+      <div class="chat-head-row">
+        <div class="chat-task-title" id="chatTitle">Task</div>
         <button class="chat-close" onclick="closeChat()">✕</button>
       </div>
-      <div class="chat-task-meta">
-        <span class="chat-priority-badge" id="chatPriorityBadge"></span>
-        <span class="chat-assignee-meta" id="chatAssigneeMeta"></span>
+      <div class="chat-meta">
+        <span class="chat-badge" id="chatBadge"></span>
+        <span class="chat-assignee" id="chatAssignee"></span>
       </div>
     </div>
-    <div class="chat-sender-bar">
-      <span class="chat-sender-label">YOU ARE:</span>
-      <input class="chat-sender-input" id="chatSenderName" placeholder="Enter your name…" maxlength="40" />
+    <div class="sender-bar">
+      <span class="sender-label">YOU ARE:</span>
+      <input class="sender-input" id="senderName" placeholder="Enter your name…" maxlength="40">
     </div>
-    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-msgs" id="chatMsgs"></div>
     <div class="chat-input-area">
       <div class="chat-input-row">
-        <textarea class="chat-input" id="chatInput" placeholder="Type an update…" rows="1"
-          onkeydown="handleChatKey(event)"></textarea>
-        <button class="chat-send-btn" onclick="sendChatMsg()" id="chatSendBtn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
+        <textarea class="chat-input" id="chatInput" placeholder="Type an update… (Enter to send)" rows="1" onkeydown="chatKey(event)"></textarea>
+        <button class="chat-send" onclick="sendMsg()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Toast container -->
-<div class="toast-container" id="toastContainer"></div>
+<div class="toast-container" id="toastCont"></div>
 
 <script>
-// ── Storage ──────────────────────────────────────────────────────
-const STORAGE_KEY = 'oicboard_tasks_v2';
-const LOG_KEY = 'oicboard_log_v1';
+// ── Constants ─────────────────────────────────────────────────────
+var TASKS_KEY = 'oicboard_tasks_v3';
+var LOG_KEY   = 'oicboard_log_v2';
+var AUDIT_KEY = 'oicboard_audit_v2';
+var SENDER_KEY= 'oicboard_sender';
 
-function loadTasks() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { return []; }
+// ── State ─────────────────────────────────────────────────────────
+var tasks    = [];
+var logItems = [];
+var auditItems = [];
+var isOnline = navigator.onLine;
+var curFilter = 'all';
+var curAuditFilter = 'all';
+var activeChatId = null;
+
+// ── Storage ───────────────────────────────────────────────────────
+function loadAll() {
+  try { tasks = JSON.parse(localStorage.getItem(TASKS_KEY)) || []; } catch(e){ tasks=[]; }
+  try { logItems = JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch(e){ logItems=[]; }
+  try { auditItems = JSON.parse(localStorage.getItem(AUDIT_KEY)) || []; } catch(e){ auditItems=[]; }
 }
+function saveTasks()  { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); }
+function saveLog()    { localStorage.setItem(LOG_KEY, JSON.stringify(logItems.slice(0,50))); }
+function saveAudit()  { localStorage.setItem(AUDIT_KEY, JSON.stringify(auditItems.slice(0,500))); }
 
-function saveTasks(tasks) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+// ── UID ───────────────────────────────────────────────────────────
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+// ── Helpers ───────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-function loadLog() {
-  try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; }
-  catch { return []; }
+function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+function fmtDate(d) {
+  if(!d) return '';
+  return new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
 }
-
-function saveLog(log) {
-  localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(-50)));
-}
-
-// ── State ────────────────────────────────────────────────────────
-let tasks = loadTasks();
-let log = loadLog();
-let isOnline = navigator.onLine;
-let currentFilter = 'all';
-
-// ── ID generator ─────────────────────────────────────────────────
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
-
-// ── Filters ───────────────────────────────────────────────────────
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-
-function filteredTasks(priority) {
-  return tasks.filter(t => {
-    if (t.priority !== priority) return false;
-    if (currentFilter === 'all') return true;
-    if (currentFilter === priority) return true;
-    if (currentFilter === 'pending') return !t.synced;
-    if (currentFilter === 'done') return t.done;
-    return false;
-  });
-}
-
-// ── Deadline helpers ──────────────────────────────────────────────
-function deadlineClass(dateStr) {
-  if (!dateStr) return '';
-  const diff = (new Date(dateStr) - new Date()) / 86400000;
-  if (diff < 0) return 'overdue';
-  if (diff <= 2) return 'soon';
+function dlClass(d) {
+  if(!d) return '';
+  var diff=(new Date(d)-new Date())/86400000;
+  if(diff<0) return 'overdue';
+  if(diff<=2) return 'soon';
   return '';
 }
-
-function formatDate(d) {
-  if (!d) return '';
-  return new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+function now() { return new Date().toISOString(); }
+function fmtTime(iso) {
+  return new Date(iso).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+function fmtDateTime(iso) {
+  var d=new Date(iso);
+  return d.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})+' '+fmtTime(iso);
 }
 
 // ── Render ────────────────────────────────────────────────────────
 function render() {
-  ['urgent', 'high', 'routine'].forEach(p => {
-    const col = document.getElementById('col' + cap(p));
-    const list = filteredTasks(p);
-    col.innerHTML = '';
-    if (!list.length) {
-      col.innerHTML = `<div class="empty-col"><div class="empty-icon">—</div><span>No tasks here</span></div>`;
-    } else {
-      list.forEach(t => col.appendChild(makeCard(t)));
+  ['urgent','high','routine'].forEach(function(p) {
+    var col = document.getElementById('col'+cap(p));
+    var list = getFiltered(p);
+    if(!list.length) {
+      col.innerHTML = '<div class="col-empty"><span>—</span><span>No tasks here</span></div>';
+      return;
     }
+    col.innerHTML = '';
+    list.forEach(function(t){ col.appendChild(makeCard(t)); });
   });
   updateCounts();
-  renderLog();
 }
 
-function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function getFiltered(priority) {
+  return tasks.filter(function(t){
+    if(t.priority!==priority) return false;
+    if(curFilter==='all') return true;
+    if(curFilter===priority) return true;
+    if(curFilter==='pending') return !t.synced && !t.done;
+    if(curFilter==='done') return t.done;
+    return false;
+  });
+}
 
 function makeCard(t) {
-  const card = document.createElement('div');
-  card.className = 'task-card' + (t.done ? ' done' : '');
-  card.dataset.id = t.id;
+  var div = document.createElement('div');
+  div.className = 'task-card'+(t.done?' done':'');
 
-  const dlClass = t.done ? '' : deadlineClass(t.deadline);
-  const dlLabel = t.deadline
-    ? `<span class="task-deadline ${dlClass}">📅 ${formatDate(t.deadline)}${dlClass === 'overdue' ? ' · OVERDUE' : dlClass === 'soon' ? ' · Soon' : ''}</span>`
+  var dlc = t.done?'':dlClass(t.deadline);
+  var dlHtml = t.deadline
+    ? '<span class="task-deadline '+dlc+'">📅 '+fmtDate(t.deadline)+(dlc==='overdue'?' · OVERDUE':dlc==='soon'?' · Soon':'')+'</span>'
     : '';
-  const assignee = t.assignee ? `<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">👤 ${t.assignee}</span>` : '';
-  const syncPill = `<span class="task-synced ${t.synced ? 'synced' : 'pending'}">${t.synced ? '✓ synced' : '⏳ pending'}</span>`;
+  var asHtml = t.assignee ? '<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted)">👤 '+esc(t.assignee)+'</span>' : '';
+  var syncHtml = '<span class="task-synced '+(t.synced?'synced':'pending')+'">'+(t.synced?'✓ synced':'⏳ pending')+'</span>';
 
-  card.innerHTML = `
-    <div class="task-header">
-      <div class="task-title">${escHtml(t.title)}</div>
-      <div class="task-actions">
-        <button class="task-action-btn done-btn" title="${t.done ? 'Mark undone' : 'Mark done'}" onclick="toggleDone('${t.id}')">
-          ${t.done ? '↩' : '✓'}
-        </button>
-        <div class="chat-btn-wrap">
-          <button class="task-action-btn chat-btn" title="Task Chat" onclick="openChat('${t.id}')">💬</button>
-          ${(t.messages && t.messages.filter(m => !m.read).length) ? `<span class="unread-badge">${t.messages.filter(m => !m.read).length}</span>` : ''}
-        </div>
-        <button class="task-action-btn" title="Edit" onclick="openEdit('${t.id}')">✎</button>
-        <button class="task-action-btn del-btn" title="Delete" onclick="deleteTask('${t.id}')">✕</button>
-      </div>
-    </div>
-    ${t.note ? `<div class="task-note">${escHtml(t.note)}</div>` : ''}
-    <div class="task-footer">
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        ${dlLabel}
-        ${assignee}
-      </div>
-      ${syncPill}
-    </div>`;
-  return card;
-}
+  var unread = (t.messages||[]).filter(function(m){return !m.read;}).length;
+  var badgeHtml = unread ? '<span class="unread-badge">'+unread+'</span>' : '';
+  var noteHtml = t.note ? '<div class="task-note">'+esc(t.note)+'</div>' : '';
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  div.innerHTML =
+    '<div class="task-header">'+
+      '<div class="task-title">'+esc(t.title)+'</div>'+
+      '<div class="task-actions">'+
+        '<button class="task-btn done-btn" title="'+(t.done?'Reopen':'Mark done')+'" onclick="toggleDone(\''+t.id+'\')">'+
+          (t.done?'↩':'✓')+
+        '</button>'+
+        '<div class="chat-wrap">'+
+          '<button class="task-btn chat-btn" title="Task Chat" onclick="openChat(\''+t.id+'\')">💬</button>'+
+          badgeHtml+
+        '</div>'+
+        '<button class="task-btn" title="Edit" onclick="openEdit(\''+t.id+'\')">✎</button>'+
+        '<button class="task-btn del-btn" title="Delete" onclick="deleteTask(\''+t.id+'\')">✕</button>'+
+      '</div>'+
+    '</div>'+
+    noteHtml+
+    '<div class="task-footer">'+
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+dlHtml+asHtml+'</div>'+
+      syncHtml+
+    '</div>';
+
+  return div;
 }
 
 function updateCounts() {
-  const active = tasks.filter(t => !t.done);
-  const u = active.filter(t => t.priority === 'urgent').length;
-  const h = active.filter(t => t.priority === 'high').length;
-  const r = active.filter(t => t.priority === 'routine').length;
-  document.getElementById('countUrgent').textContent = u;
-  document.getElementById('countHigh').textContent = h;
-  document.getElementById('countRoutine').textContent = r;
-  document.getElementById('countTotal').textContent = u + h + r;
-  document.getElementById('badgeUrgent').textContent = u;
-  document.getElementById('badgeHigh').textContent = h;
-  document.getElementById('badgeRoutine').textContent = r;
+  var active = tasks.filter(function(t){return !t.done;});
+  var u=0,h=0,r=0;
+  active.forEach(function(t){
+    if(t.priority==='urgent') u++;
+    else if(t.priority==='high') h++;
+    else r++;
+  });
+  document.getElementById('countUrgent').textContent=u;
+  document.getElementById('countHigh').textContent=h;
+  document.getElementById('countRoutine').textContent=r;
+  document.getElementById('countTotal').textContent=u+h+r;
+  document.getElementById('badgeUrgent').textContent=u;
+  document.getElementById('badgeHigh').textContent=h;
+  document.getElementById('badgeRoutine').textContent=r;
 }
 
-// ── Add / Edit / Delete ───────────────────────────────────────────
-function addTask() {
-  const title = document.getElementById('taskTitle').value.trim();
-  if (!title) { showToast('Please enter a task title.', 'error'); return; }
+// ── Filters ───────────────────────────────────────────────────────
+function setFilter(f,btn) {
+  curFilter=f;
+  document.querySelectorAll('.filter-tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  render();
+}
 
-  const task = {
+// ── Add Task ──────────────────────────────────────────────────────
+function addTask() {
+  var title = document.getElementById('taskTitle').value.trim();
+  if(!title){ showToast('Please enter a task title.','error'); return; }
+  var t = {
     id: uid(),
-    title,
+    title: title,
     priority: document.getElementById('taskPriority').value,
     deadline: document.getElementById('taskDeadline').value,
     note: document.getElementById('taskNote').value.trim(),
     assignee: document.getElementById('taskAssignee').value.trim(),
+    messages: [],
     done: false,
     synced: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: now(),
+    updatedAt: now()
   };
-
-  tasks.unshift(task);
-  saveTasks(tasks);
-  addLogEntry(`New task added: "${title}" [${task.priority}]`);
-  addAudit('created', `Priority: ${task.priority}${task.deadline ? ' · Deadline: '+formatDate(task.deadline) : ''}${task.assignee ? ' · Assigned to: '+task.assignee : ''}`, task.title, task.priority, task.assignee || '');
+  tasks.unshift(t);
+  saveTasks();
+  addLog('New task added: "'+title+'" ['+t.priority+']');
+  addAudit('created', 'Priority: '+t.priority+(t.deadline?' · Deadline: '+fmtDate(t.deadline):'')+(t.assignee?' · Assigned to: '+t.assignee:''), t.title, t.priority, t.assignee||'');
   render();
-  showToast('Task added. Will sync when online.', 'success');
-
-  // Clear form
-  document.getElementById('taskTitle').value = '';
-  document.getElementById('taskNote').value = '';
-  document.getElementById('taskAssignee').value = '';
-  document.getElementById('taskDeadline').value = '';
-  document.getElementById('taskPriority').value = 'routine';
-
-  if (isOnline) autoSync();
+  showToast('Task added!','success');
+  document.getElementById('taskTitle').value='';
+  document.getElementById('taskNote').value='';
+  document.getElementById('taskAssignee').value='';
+  document.getElementById('taskDeadline').value='';
+  document.getElementById('taskPriority').value='routine';
+  if(isOnline) autoSync();
 }
 
+// ── Toggle Done ───────────────────────────────────────────────────
 function toggleDone(id) {
-  const t = tasks.find(t => t.id === id);
-  if (!t) return;
-  t.done = !t.done;
-  t.synced = false;
-  t.updatedAt = new Date().toISOString();
-  saveTasks(tasks);
-  addLogEntry(`Task "${t.title.slice(0,30)}" marked ${t.done ? 'done' : 'undone'}`);
-  addAudit(t.done ? 'resolved' : 'reopened', t.done ? 'Marked as resolved/done' : 'Reopened — marked undone', t.title, t.priority, '');
+  var t=tasks.find(function(x){return x.id===id;});
+  if(!t) return;
+  t.done=!t.done; t.synced=false; t.updatedAt=now();
+  saveTasks();
+  addAudit(t.done?'resolved':'reopened', t.done?'Marked as resolved':'Reopened — marked undone', t.title, t.priority, '');
+  addLog('Task "'+(t.title.slice(0,30))+'" marked '+(t.done?'done':'undone'));
   render();
-  if (isOnline) autoSync();
+  if(isOnline) autoSync();
 }
 
+// ── Delete Task ───────────────────────────────────────────────────
 function deleteTask(id) {
-  const t = tasks.find(t => t.id === id);
-  if (!t) return;
-  if (!confirm(`Delete task "${t.title}"?`)) return;
-  tasks = tasks.filter(x => x.id !== id);
-  saveTasks(tasks);
-  addLogEntry(`Task deleted: "${t.title.slice(0,30)}"`);
-  addAudit('deleted', `Was ${t.priority} priority${t.assignee ? ', assigned to '+t.assignee : ''}`, t.title, t.priority, '');
+  var t=tasks.find(function(x){return x.id===id;});
+  if(!t) return;
+  if(!confirm('Delete task "'+t.title+'"?')) return;
+  addAudit('deleted','Was '+t.priority+' priority'+(t.assignee?', assigned to '+t.assignee:''), t.title, t.priority, '');
+  tasks=tasks.filter(function(x){return x.id!==id;});
+  saveTasks();
+  addLog('Task deleted: "'+(t.title.slice(0,30))+'"');
   render();
-  showToast('Task deleted.', 'info');
+  showToast('Task deleted.','info');
 }
 
+// ── Edit Task ─────────────────────────────────────────────────────
 function openEdit(id) {
-  const t = tasks.find(t => t.id === id);
-  if (!t) return;
-  document.getElementById('editId').value = t.id;
-  document.getElementById('editTitle').value = t.title;
-  document.getElementById('editPriority').value = t.priority;
-  document.getElementById('editDeadline').value = t.deadline || '';
-  document.getElementById('editNote').value = t.note || '';
-  document.getElementById('editAssignee').value = t.assignee || '';
+  var t=tasks.find(function(x){return x.id===id;});
+  if(!t) return;
+  document.getElementById('editId').value=t.id;
+  document.getElementById('editTitle').value=t.title;
+  document.getElementById('editPriority').value=t.priority;
+  document.getElementById('editDeadline').value=t.deadline||'';
+  document.getElementById('editNote').value=t.note||'';
+  document.getElementById('editAssignee').value=t.assignee||'';
   document.getElementById('editModal').classList.add('open');
 }
-
-function closeModal() {
-  document.getElementById('editModal').classList.remove('open');
-}
-
+function closeModal() { document.getElementById('editModal').classList.remove('open'); }
 function saveEdit() {
-  const id = document.getElementById('editId').value;
-  const t = tasks.find(t => t.id === id);
-  if (!t) return;
-  t.title = document.getElementById('editTitle').value.trim();
-  t.priority = document.getElementById('editPriority').value;
-  t.deadline = document.getElementById('editDeadline').value;
-  t.note = document.getElementById('editNote').value.trim();
-  t.assignee = document.getElementById('editAssignee').value.trim();
-  t.synced = false;
-  t.updatedAt = new Date().toISOString();
-  saveTasks(tasks);
+  var id=document.getElementById('editId').value;
+  var t=tasks.find(function(x){return x.id===id;});
+  if(!t) return;
+  t.title=document.getElementById('editTitle').value.trim();
+  t.priority=document.getElementById('editPriority').value;
+  t.deadline=document.getElementById('editDeadline').value;
+  t.note=document.getElementById('editNote').value.trim();
+  t.assignee=document.getElementById('editAssignee').value.trim();
+  t.synced=false; t.updatedAt=now();
+  saveTasks();
+  addAudit('edited','Priority: '+t.priority+(t.deadline?' · Deadline: '+fmtDate(t.deadline):'')+(t.assignee?' · Assigned: '+t.assignee:''), t.title, t.priority, '');
+  addLog('Task updated: "'+t.title.slice(0,30)+'"');
   closeModal();
   render();
-  addLogEntry(`Task updated: "${t.title.slice(0,30)}"`);
-  addAudit('edited', `Priority: ${t.priority}${t.deadline ? ' · Deadline: '+formatDate(t.deadline) : ''}${t.assignee ? ' · Assigned: '+t.assignee : ''}`, t.title, t.priority, '');
-  showToast('Task updated.', 'success');
-  if (isOnline) autoSync();
-}
-
-// ── Sync ─────────────────────────────────────────────────────────
-// This function marks all pending tasks as synced.
-// To connect a real backend (e.g. Google Sheets API or your own server),
-// replace the body of syncToServer() with your actual API call.
-async function syncToServer(pendingTasks) {
-  // ── REPLACE THIS BLOCK WITH YOUR ACTUAL API ENDPOINT ──────────
-  // Example Google Sheets via Apps Script Web App URL:
-  // const SHEET_URL = 'https://script.google.com/macros/s/YOUR_ID/exec';
-  // const res = await fetch(SHEET_URL, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ tasks: pendingTasks })
-  // });
-  // if (!res.ok) throw new Error('Server error');
-  // ──────────────────────────────────────────────────────────────
-  
-  // SIMULATED SYNC (remove when using a real endpoint):
-  await new Promise(r => setTimeout(r, 800 + Math.random() * 400));
-  // Simulate occasional failure for demo
-  if (Math.random() < 0.08) throw new Error('Simulated network error');
-  return true;
-}
-
-async function autoSync() {
-  const pending = tasks.filter(t => !t.synced);
-  if (!pending.length) return;
-  try {
-    await syncToServer(pending);
-    pending.forEach(t => { const found = tasks.find(x => x.id === t.id); if (found) found.synced = true; });
-    saveTasks(tasks);
-    addLogEntry(`✓ Synced ${pending.length} task(s) to server`);
-    render();
-    showToast(`${pending.length} task(s) synced.`, 'success');
-  } catch (e) {
-    addLogEntry(`✗ Sync failed: ${e.message}`);
-  }
-}
-
-async function manualSync() {
-  if (!isOnline) { showToast('You are offline. Sync will happen automatically when you reconnect.', 'error'); return; }
-  const btn = document.getElementById('syncBtn');
-  const icon = document.getElementById('syncIcon');
-  btn.classList.add('syncing');
-  btn.disabled = true;
-  addLogEntry('Manual sync triggered…');
-  try {
-    await autoSync();
-  } finally {
-    btn.classList.remove('syncing');
-    btn.disabled = false;
-  }
-}
-
-// ── Connectivity ──────────────────────────────────────────────────
-function updateStatus() {
-  isOnline = navigator.onLine;
-  const pill = document.getElementById('statusPill');
-  const text = document.getElementById('statusText');
-  if (isOnline) {
-    pill.className = 'status-pill online';
-    text.textContent = 'Online';
-  } else {
-    pill.className = 'status-pill offline';
-    text.textContent = 'Offline';
-  }
-}
-
-window.addEventListener('online', () => {
-  updateStatus();
-  addLogEntry('Connection restored — starting auto-sync…');
-  showToast('Back online! Syncing pending tasks…', 'info');
-  autoSync();
-});
-
-window.addEventListener('offline', () => {
-  updateStatus();
-  addLogEntry('Connection lost — tasks saved locally');
-  showToast('Offline mode — tasks saved locally.', 'error');
-});
-
-// ── Log ───────────────────────────────────────────────────────────
-function addLogEntry(msg) {
-  const now = new Date().toLocaleTimeString('en-PH', { hour12: false });
-  log.unshift({ time: now, msg });
-  saveLog(log);
-  renderLog();
-}
-
-function renderLog() {
-  const el = document.getElementById('syncLog');
-  if (!log.length) {
-    el.innerHTML = `<div class="log-entry"><span class="log-time">—</span><span>No sync activity yet.</span></div>`;
-    return;
-  }
-  el.innerHTML = log.slice(0, 20).map(e =>
-    `<div class="log-entry"><span class="log-time">${e.time}</span><span>${escHtml(e.msg)}</span></div>`
-  ).join('');
-}
-
-function clearLog() {
-  log = [];
-  saveLog(log);
-  renderLog();
-}
-
-// ── Toast ─────────────────────────────────────────────────────────
-function showToast(msg, type = 'info') {
-  const c = document.getElementById('toastContainer');
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 3000);
-}
-
-// ── Init ──────────────────────────────────────────────────────────
-loadAudit();
-updateStatus();
-render();
-renderLog();
-renderAuditLog();
-
-// Auto-sync on load if online and there are pending
-if (isOnline && tasks.some(t => !t.synced)) {
-  setTimeout(() => autoSync(), 1000);
-}
-
-// Periodic check every 30s
-setInterval(() => {
-  if (isOnline && tasks.some(t => !t.synced)) autoSync();
-}, 30000);
-
-
-
-// ── Audit Log ────────────────────────────────────────────────────
-const AUDIT_KEY = 'oicboard_audit_v1';
-let auditLog = [];
-let auditFilter = 'all';
-
-function loadAudit() {
-  try { auditLog = JSON.parse(localStorage.getItem(AUDIT_KEY)) || []; }
-  catch { auditLog = []; }
-}
-
-function saveAudit() {
-  localStorage.setItem(AUDIT_KEY, JSON.stringify(auditLog.slice(-500)));
-}
-
-function addAudit(type, detail, taskTitle, priority, who) {
-  auditLog.unshift({
-    id: uid(),
-    type,           // created | resolved | reopened | edited | deleted | message
-    detail,         // human-readable description
-    taskTitle: taskTitle || '',
-    priority: priority || '',
-    who: who || '',
-    ts: new Date().toISOString()
-  });
-  saveAudit();
-  renderAuditLog();
-}
-
-function setAuditFilter(f, btn) {
-  auditFilter = f;
-  document.querySelectorAll('.audit-filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderAuditLog();
-}
-
-function renderAuditLog() {
-  const container = document.getElementById('auditEntries');
-  if (!container) return;
-
-  const filtered = auditFilter === 'all'
-    ? auditLog
-    : auditLog.filter(e => e.type === auditFilter);
-
-  document.getElementById('auditCount').textContent = filtered.length + ' entr' + (filtered.length === 1 ? 'y' : 'ies');
-
-  if (!filtered.length) {
-    container.innerHTML = '<div class="audit-empty">No entries for this filter.</div>';
-    return;
-  }
-
-  const typeLabels = {
-    created: 'CREATED', resolved: 'RESOLVED', reopened: 'REOPENED',
-    edited: 'EDITED', deleted: 'DELETED', message: 'MESSAGE'
-  };
-
-  container.innerHTML = filtered.map(e => {
-    const dt = new Date(e.ts);
-    const dateStr = dt.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
-    const timeStr = dt.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const pTag = e.priority ? `<span class="priority-tag ${e.priority}">${e.priority}</span>` : '';
-    const byWho = e.who ? `<span class="by-who">by ${escHtml(e.who)}</span>` : '';
-    return `
-      <div class="audit-entry">
-        <div class="audit-time">${dateStr}<br>${timeStr}</div>
-        <div class="audit-type ${e.type}">${typeLabels[e.type] || e.type.toUpperCase()}</div>
-        <div class="audit-detail">
-          <span class="task-ref">${escHtml(e.taskTitle)}</span>${pTag}${byWho}
-          ${e.detail ? '<br><span style="color:var(--muted);font-size:12px">' + escHtml(e.detail) + '</span>' : ''}
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function clearAuditLog() {
-  if (!confirm('Clear all task history? This cannot be undone.')) return;
-  auditLog = [];
-  saveAudit();
-  renderAuditLog();
-}
-
-function exportAuditCSV() {
-  if (!auditLog.length) { showToast('No history to export.', 'error'); return; }
-  const header = ['Date', 'Time', 'Type', 'Task', 'Priority', 'By', 'Detail'];
-  const rows = auditLog.map(e => {
-    const dt = new Date(e.ts);
-    return [
-      dt.toLocaleDateString('en-PH'),
-      dt.toLocaleTimeString('en-PH', { hour12: true }),
-      e.type.toUpperCase(),
-      e.taskTitle,
-      e.priority,
-      e.who,
-      e.detail
-    ].map(v => '"' + String(v || '').replace(/"/g, '""') + '"');
-  });
-  const csv = [header, ...rows].map(r => r.join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'oicboard-history-' + new Date().toISOString().slice(0,10) + '.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('History exported as CSV.', 'success');
-}
-
-// ── Tab switching ─────────────────────────────────────────────────
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.log-panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  showToast('Task updated.','success');
+  if(isOnline) autoSync();
 }
 
 // ── Chat ──────────────────────────────────────────────────────────
-const SENDER_KEY = 'oicboard_sender';
-let activeChatId = null;
-
-function openChat(taskId) {
-  const t = tasks.find(x => x.id === taskId);
-  if (!t) return;
-  activeChatId = taskId;
-
-  // Mark all messages read
-  if (t.messages) t.messages.forEach(m => m.read = true);
-  saveTasks(tasks);
-  render();
-
-  // Populate header
-  document.getElementById('chatTaskTitle').textContent = t.title;
-  const pb = document.getElementById('chatPriorityBadge');
-  pb.textContent = { urgent: '🔴 Urgent', high: '🟠 High Priority', routine: '🟢 Routine' }[t.priority];
-  pb.className = 'chat-priority-badge ' + t.priority;
-  const am = document.getElementById('chatAssigneeMeta');
-  am.textContent = t.assignee ? '👤 ' + t.assignee : '';
-
-  // Restore sender name
-  const saved = localStorage.getItem(SENDER_KEY) || '';
-  document.getElementById('chatSenderName').value = saved;
-
-  renderChatMessages(t);
+function openChat(id) {
+  var t=tasks.find(function(x){return x.id===id;});
+  if(!t) return;
+  activeChatId=id;
+  if(!t.messages) t.messages=[];
+  t.messages.forEach(function(m){m.read=true;});
+  saveTasks(); render();
+  document.getElementById('chatTitle').textContent=t.title;
+  var b=document.getElementById('chatBadge');
+  var labels={urgent:'🔴 Urgent',high:'🟠 High Priority',routine:'🟢 Routine'};
+  b.textContent=labels[t.priority]||t.priority;
+  b.className='chat-badge '+t.priority;
+  document.getElementById('chatAssignee').textContent=t.assignee?'👤 '+t.assignee:'';
+  document.getElementById('senderName').value=localStorage.getItem(SENDER_KEY)||'';
+  renderMsgs(t);
   document.getElementById('chatOverlay').classList.add('open');
-  setTimeout(() => {
+  setTimeout(function(){
     document.getElementById('chatInput').focus();
-    scrollChatBottom();
-  }, 100);
+    scrollMsgs();
+  },120);
 }
-
 function closeChat() {
   document.getElementById('chatOverlay').classList.remove('open');
-  activeChatId = null;
+  activeChatId=null;
 }
-
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('chatOverlay')) closeChat();
+function overlayClick(e) {
+  if(e.target===document.getElementById('chatOverlay')) closeChat();
 }
-
-function renderChatMessages(t) {
-  const container = document.getElementById('chatMessages');
-  const msgs = t.messages || [];
-  if (!msgs.length) {
-    container.innerHTML = `<div class="chat-empty"><div class="chat-empty-icon">💬</div><span>No updates yet. Be the first to post.</span></div>`;
+function renderMsgs(t) {
+  var cont=document.getElementById('chatMsgs');
+  var msgs=t.messages||[];
+  if(!msgs.length){
+    cont.innerHTML='<div class="chat-empty-msg"><span style="font-size:36px;opacity:.25">💬</span><span>No updates yet. Be the first to post.</span></div>';
     return;
   }
-  container.innerHTML = '';
-  const currentSender = document.getElementById('chatSenderName').value.trim();
-
-  // Group by date
-  let lastDate = '';
-  msgs.forEach((m, i) => {
-    const msgDate = new Date(m.ts).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
-    if (msgDate !== lastDate) {
-      lastDate = msgDate;
-      const sep = document.createElement('div');
-      sep.className = 'chat-status-msg';
-      sep.textContent = msgDate;
-      container.appendChild(sep);
+  var me=document.getElementById('senderName').value.trim();
+  cont.innerHTML='';
+  var lastDate='';
+  msgs.forEach(function(m){
+    var d=new Date(m.ts).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+    if(d!==lastDate){
+      lastDate=d;
+      var sep=document.createElement('div');
+      sep.className='chat-date-sep';
+      sep.textContent=d;
+      cont.appendChild(sep);
     }
-
-    const isSelf = currentSender && m.sender === currentSender;
-    const div = document.createElement('div');
-    div.className = 'chat-msg ' + (isSelf ? 'self' : 'other');
-
-    const time = new Date(m.ts).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true });
-    div.innerHTML = `
-      <div class="chat-msg-meta">
-        <span class="chat-msg-sender">${escHtml(m.sender)}</span>
-        <span class="chat-msg-time">${time}</span>
-        ${isSelf ? `<button class="chat-msg-del" onclick="deleteChatMsg('${m.id}')" title="Delete">✕</button>` : ''}
-      </div>
-      <div class="chat-bubble">${escHtml(m.text).replace(/\n/g, '<br>')}</div>
-    `;
-    container.appendChild(div);
+    var isSelf=(me && m.sender===me);
+    var w=document.createElement('div');
+    w.className='msg-wrap '+(isSelf?'self':'other');
+    var delBtn=isSelf?'<button class="msg-del" onclick="delMsg(\''+m.id+'\')">✕</button>':'';
+    var bubbleText=esc(m.text).replace(/\n/g,'<br>');
+    w.innerHTML=
+      '<div class="msg-meta">'+
+        '<span class="msg-sender">'+esc(m.sender)+'</span>'+
+        '<span class="msg-time">'+fmtTime(m.ts)+'</span>'+
+        delBtn+
+      '</div>'+
+      '<div class="msg-bubble">'+bubbleText+'</div>';
+    cont.appendChild(w);
   });
 }
-
-function scrollChatBottom() {
-  const c = document.getElementById('chatMessages');
-  c.scrollTop = c.scrollHeight;
+function scrollMsgs() {
+  var c=document.getElementById('chatMsgs');
+  c.scrollTop=c.scrollHeight;
 }
-
-function sendChatMsg() {
-  if (!activeChatId) return;
-  const senderEl = document.getElementById('chatSenderName');
-  const inputEl = document.getElementById('chatInput');
-  const sender = senderEl.value.trim();
-  const text = inputEl.value.trim();
-
-  if (!sender) { senderEl.focus(); showToast('Please enter your name first.', 'error'); return; }
-  if (!text) return;
-
-  localStorage.setItem(SENDER_KEY, sender);
-
-  const t = tasks.find(x => x.id === activeChatId);
-  if (!t) return;
-  if (!t.messages) t.messages = [];
-
-  const msg = {
-    id: uid(),
-    sender,
-    text,
-    ts: new Date().toISOString(),
-    read: true
-  };
-
+function sendMsg() {
+  if(!activeChatId) return;
+  var sender=document.getElementById('senderName').value.trim();
+  var text=document.getElementById('chatInput').value.trim();
+  if(!sender){ document.getElementById('senderName').focus(); showToast('Enter your name first.','error'); return; }
+  if(!text) return;
+  localStorage.setItem(SENDER_KEY,sender);
+  var t=tasks.find(function(x){return x.id===activeChatId;});
+  if(!t) return;
+  if(!t.messages) t.messages=[];
+  var msg={id:uid(),sender:sender,text:text,ts:now(),read:true};
   t.messages.push(msg);
-  t.synced = false;
-  t.updatedAt = new Date().toISOString();
-  saveTasks(tasks);
-  addAudit('message', `"${text.slice(0,80)}${text.length>80?'…':''}"`, t.title, t.priority, sender);
+  t.synced=false; t.updatedAt=now();
+  saveTasks();
+  addAudit('message','"'+text.slice(0,80)+(text.length>80?'…':'')+'"', t.title, t.priority, sender);
   render();
-
-  inputEl.value = '';
-  inputEl.style.height = 'auto';
-  renderChatMessages(t);
-  scrollChatBottom();
-  if (isOnline) autoSync();
+  document.getElementById('chatInput').value='';
+  document.getElementById('chatInput').style.height='auto';
+  renderMsgs(t);
+  scrollMsgs();
+  if(isOnline) autoSync();
 }
-
-function deleteChatMsg(msgId) {
-  if (!activeChatId) return;
-  const t = tasks.find(x => x.id === activeChatId);
-  if (!t || !t.messages) return;
-  t.messages = t.messages.filter(m => m.id !== msgId);
-  t.synced = false;
-  t.updatedAt = new Date().toISOString();
-  saveTasks(tasks);
-  render();
-  renderChatMessages(t);
+function delMsg(msgId) {
+  if(!activeChatId) return;
+  var t=tasks.find(function(x){return x.id===activeChatId;});
+  if(!t||!t.messages) return;
+  t.messages=t.messages.filter(function(m){return m.id!==msgId;});
+  t.synced=false; t.updatedAt=now();
+  saveTasks(); render(); renderMsgs(t);
 }
-
-function handleChatKey(e) {
-  const ta = document.getElementById('chatInput');
-  // Auto-resize
-  ta.style.height = 'auto';
-  ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
-  // Enter to send, Shift+Enter for newline
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendChatMsg();
+function chatKey(e) {
+  var ta=document.getElementById('chatInput');
+  ta.style.height='auto';
+  ta.style.height=Math.min(ta.scrollHeight,120)+'px';
+  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); }
+}
+document.getElementById('senderName').addEventListener('input',function(){
+  if(activeChatId){
+    var t=tasks.find(function(x){return x.id===activeChatId;});
+    if(t) renderMsgs(t);
   }
-}
+});
 
-// Re-render chat when sender name changes
-document.addEventListener('DOMContentLoaded', () => {
-  const si = document.getElementById('chatSenderName');
-  if (si) si.addEventListener('input', () => {
-    if (activeChatId) {
-      const t = tasks.find(x => x.id === activeChatId);
-      if (t) renderChatMessages(t);
-    }
+// ── Audit Log ─────────────────────────────────────────────────────
+function addAudit(type,detail,taskTitle,priority,who){
+  auditItems.unshift({id:uid(),type:type,detail:detail||'',taskTitle:taskTitle||'',priority:priority||'',who:who||'',ts:now()});
+  saveAudit();
+  renderAudit();
+}
+function setAuditFilter(f,btn){
+  curAuditFilter=f;
+  document.querySelectorAll('.af-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderAudit();
+}
+function renderAudit(){
+  var cont=document.getElementById('auditList');
+  if(!cont) return;
+  var list=curAuditFilter==='all'?auditItems:auditItems.filter(function(e){return e.type===curAuditFilter;});
+  document.getElementById('auditCount').textContent=list.length+' entr'+(list.length===1?'y':'ies');
+  if(!list.length){ cont.innerHTML='<div class="audit-empty">No entries for this filter.</div>'; return; }
+  var labels={created:'CREATED',resolved:'RESOLVED',reopened:'REOPENED',edited:'EDITED',deleted:'DELETED',message:'MESSAGE'};
+  var html='';
+  list.forEach(function(e){
+    var dt=new Date(e.ts);
+    var ds=dt.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+    var ts=dt.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true});
+    var ptag=e.priority?'<span class="ptag '+e.priority+'">'+e.priority+'</span>':'';
+    var who=e.who?'<span class="audit-who">by '+esc(e.who)+'</span>':'';
+    var note=e.detail?'<span class="audit-note">'+esc(e.detail)+'</span>':'';
+    html+='<div class="audit-row">'+
+      '<div class="audit-time">'+ds+'<br>'+ts+'</div>'+
+      '<div class="audit-type '+e.type+'">'+(labels[e.type]||e.type.toUpperCase())+'</div>'+
+      '<div class="audit-detail"><span class="audit-task">'+esc(e.taskTitle)+'</span>'+ptag+who+note+'</div>'+
+    '</div>';
   });
-});
-
-// ── Service Worker (inline via Blob URL) ──────────────────────────
-(function registerSW() {
-  const swCode = `
-    const CACHE = 'oicboard-v1';
-    self.addEventListener('install', e => {
-      e.waitUntil(
-        caches.open(CACHE).then(c => c.addAll(['./', self.location.href]))
-      );
-      self.skipWaiting();
-    });
-    self.addEventListener('activate', e => {
-      e.waitUntil(caches.keys().then(keys =>
-        Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-      ));
-      self.clients.claim();
-    });
-    self.addEventListener('fetch', e => {
-      e.respondWith(
-        fetch(e.request).catch(() => caches.match(e.request))
-      );
-    });
-  `;
-  if ('serviceWorker' in navigator) {
-    const blob = new Blob([swCode], { type: 'application/javascript' });
-    const url = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(url, { scope: './' })
-      .then(() => addLogEntry('✓ Service worker registered (offline cache active)'))
-      .catch(e => addLogEntry('⚠ SW registration skipped: ' + e.message));
-  }
-})();
-
-// ── Install Prompt (Add to Home Screen) ──────────────────────────
-let deferredPrompt = null;
-
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const banner = document.createElement('div');
-  banner.id = 'installBanner';
-  banner.style.cssText = `
-    position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-    background:#181c27;border:1px solid #5b8dee;border-radius:14px;
-    padding:14px 20px;display:flex;align-items:center;gap:14px;
-    box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:998;
-    font-family:'DM Sans',sans-serif;font-size:13px;color:#e8eaf0;
-    animation:toastIn 0.3s ease;max-width:90vw;
-  `;
-  banner.innerHTML = `
-    <span style="font-size:22px">📲</span>
-    <div>
-      <div style="font-weight:600;margin-bottom:2px">Install OIC Board</div>
-      <div style="color:#6b7280;font-size:12px">Add to your home screen for quick access</div>
-    </div>
-    <button onclick="installApp()" style="
-      padding:8px 16px;border-radius:8px;border:none;background:#5b8dee;
-      color:#fff;font-weight:600;cursor:pointer;font-size:13px;white-space:nowrap;
-    ">Install</button>
-    <button onclick="document.getElementById('installBanner').remove()" style="
-      background:transparent;border:none;color:#6b7280;cursor:pointer;
-      font-size:18px;padding:0 4px;line-height:1;
-    ">✕</button>
-  `;
-  document.body.appendChild(banner);
-});
-
-async function installApp() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  addLogEntry(outcome === 'accepted' ? '✓ App installed to home screen' : 'Install prompt dismissed');
-  deferredPrompt = null;
-  const b = document.getElementById('installBanner');
-  if (b) b.remove();
+  cont.innerHTML=html;
+}
+function clearAudit(){
+  if(!confirm('Clear all task history?')) return;
+  auditItems=[]; saveAudit(); renderAudit();
+}
+function exportCSV(){
+  if(!auditItems.length){ showToast('No history to export.','error'); return; }
+  var rows=[['Date','Time','Type','Task','Priority','By','Detail']];
+  auditItems.forEach(function(e){
+    var dt=new Date(e.ts);
+    rows.push([
+      dt.toLocaleDateString('en-PH'),
+      dt.toLocaleTimeString('en-PH',{hour12:true}),
+      e.type.toUpperCase(),e.taskTitle,e.priority,e.who,e.detail
+    ].map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}));
+  });
+  var csv=rows.map(function(r){return r.join(',');}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='oicboard-history-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Exported as CSV.','success');
 }
 
-window.addEventListener('appinstalled', () => {
-  showToast('OIC Board installed successfully!', 'success');
-  addLogEntry('✓ App installed on device');
+// ── Sync Log ──────────────────────────────────────────────────────
+function addLog(msg){
+  var t=new Date().toLocaleTimeString('en-PH',{hour12:false});
+  logItems.unshift({time:t,msg:msg});
+  saveLog(); renderLog();
+}
+function renderLog(){
+  var el=document.getElementById('syncLog');
+  if(!logItems.length){ el.innerHTML='<div class="log-entry"><span class="log-time">—</span><span>No sync activity yet.</span></div>'; return; }
+  el.innerHTML=logItems.slice(0,20).map(function(e){
+    return '<div class="log-entry"><span class="log-time">'+e.time+'</span><span>'+esc(e.msg)+'</span></div>';
+  }).join('');
+}
+function clearLog(){ logItems=[]; saveLog(); renderLog(); }
+
+// ── Tab switching ─────────────────────────────────────────────────
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.log-panel').forEach(function(p){p.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('panel'+cap(tab)).classList.add('active');
+}
+
+// ── Sync ──────────────────────────────────────────────────────────
+async function syncToServer(pending){
+  // Replace this block with your real API endpoint when ready
+  await new Promise(function(r){setTimeout(r,600+Math.random()*400);});
+  if(Math.random()<0.05) throw new Error('Simulated error');
+}
+async function autoSync(){
+  var pending=tasks.filter(function(t){return !t.synced;});
+  if(!pending.length) return;
+  try {
+    await syncToServer(pending);
+    pending.forEach(function(p){
+      var found=tasks.find(function(x){return x.id===p.id;});
+      if(found) found.synced=true;
+    });
+    saveTasks(); render();
+    addLog('✓ Synced '+pending.length+' task(s)');
+    showToast(pending.length+' task(s) synced.','success');
+  } catch(e){
+    addLog('✗ Sync failed: '+e.message);
+  }
+}
+async function manualSync(){
+  if(!isOnline){ showToast('You are offline.','error'); return; }
+  var btn=document.getElementById('syncBtn');
+  btn.classList.add('syncing'); btn.disabled=true;
+  addLog('Manual sync triggered…');
+  try { await autoSync(); } finally { btn.classList.remove('syncing'); btn.disabled=false; }
+}
+
+// ── Connectivity ──────────────────────────────────────────────────
+function updateStatus(){
+  isOnline=navigator.onLine;
+  var pill=document.getElementById('statusPill');
+  document.getElementById('statusText').textContent=isOnline?'Online':'Offline';
+  pill.className='status-pill '+(isOnline?'online':'offline');
+}
+window.addEventListener('online',function(){ updateStatus(); addLog('Connection restored — syncing…'); showToast('Back online! Syncing…','info'); autoSync(); });
+window.addEventListener('offline',function(){ updateStatus(); addLog('Connection lost — tasks saved locally'); showToast('Offline — tasks saved locally.','error'); });
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg,type){
+  var c=document.getElementById('toastCont');
+  var t=document.createElement('div');
+  t.className='toast '+type; t.textContent=msg; c.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){t.remove();},400); },3000);
+}
+
+// ── Service Worker ────────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  var swCode="const CACHE='oicboard-v2';self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./'])));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});";
+  var swBlob=new Blob([swCode],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(swBlob),{scope:'./'})
+    .then(function(){ addLog('✓ Offline cache active'); })
+    .catch(function(e){ addLog('SW skipped: '+e.message); });
+}
+
+// ── PWA Install ───────────────────────────────────────────────────
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault(); deferredPrompt=e;
+  var b=document.createElement('div');
+  b.id='installBanner';
+  b.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#181c27;border:1px solid #5b8dee;border-radius:14px;padding:14px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:998;font-family:DM Sans,sans-serif;font-size:13px;color:#e8eaf0;max-width:90vw;';
+  b.innerHTML='<span style="font-size:22px">📲</span><div><div style="font-weight:600">Install OIC Board</div><div style="color:#6b7280;font-size:12px">Add to your home screen</div></div><button onclick="installApp()" style="padding:8px 16px;border-radius:8px;border:none;background:#5b8dee;color:#fff;font-weight:600;cursor:pointer;">Install</button><button onclick="document.getElementById(\'installBanner\').remove()" style="background:transparent;border:none;color:#6b7280;cursor:pointer;font-size:18px;">✕</button>';
+  document.body.appendChild(b);
 });
+async function installApp(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  var r=await deferredPrompt.userChoice;
+  addLog(r.outcome==='accepted'?'✓ App installed':'Install dismissed');
+  deferredPrompt=null;
+  var b=document.getElementById('installBanner');
+  if(b) b.remove();
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+loadAll();
+updateStatus();
+render();
+renderLog();
+renderAudit();
+if(isOnline && tasks.some(function(t){return !t.synced;})) setTimeout(autoSync,1000);
+setInterval(function(){ if(isOnline && tasks.some(function(t){return !t.synced;})) autoSync(); },30000);
 </script>
 </body>
 </html>
