@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OIC Board">
+<meta name="application-name" content="OIC Board">
+<meta name="theme-color" content="#0f1117">
+<meta name="description" content="OIC Task Board — PCA-ARC FPDD. Manage urgent, high priority and routine tasks offline.">
+<title>OIC Task Board — PCA-ARC</title>
+
+<!-- Inline PWA Manifest via base64 blob -->
+<link id="manifestLink" rel="manifest">
+
+<!-- Apple touch icon (inline SVG→PNG via canvas) -->
+<link rel="apple-touch-icon" id="appleIcon">
+
+<script>
+// ── Inline PWA Manifest ───────────────────────────────────────────
+(function() {
+  const manifest = {
+    name: "OIC Task Board — PCA-ARC",
+    short_name: "OIC Board",
+    description: "Manage urgent, high priority and routine tasks for your OIC. Works offline.",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#0f1117",
+    theme_color: "#0f1117",
+    orientation: "portrait-primary",
+    icons: [
+      { src: generateIcon(192), sizes: "192x192", type: "image/png", purpose: "any maskable" },
+      { src: generateIcon(512), sizes: "512x512", type: "image/png", purpose: "any maskable" }
+    ]
+  };
+
+  function generateIcon(size) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    // Background
+    ctx.fillStyle = '#0f1117';
+    ctx.fillRect(0, 0, size, size);
+    // Rounded rect accent
+    ctx.fillStyle = '#5b8dee';
+    const r = size * 0.18, x = size * 0.12, y = size * 0.12, w = size * 0.76, h = size * 0.76;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath(); ctx.fill();
+    // Three priority dots
+    const dots = [['#ff4d4d', 0.32], ['#f5a623', 0.5], ['#3ecf8e', 0.68]];
+    dots.forEach(([color, yFrac]) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(size * 0.38, size * yFrac, size * 0.055, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.fillRect(size * 0.47, size * yFrac - size * 0.035, size * 0.25, size * 0.07);
+    });
+    return canvas.toDataURL('image/png');
+  }
+
+  // Patch icons with real data URLs
+  const iconData = generateIcon(192);
+  manifest.icons[0].src = iconData;
+  manifest.icons[1].src = generateIcon(512);
+
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  document.getElementById('manifestLink').href = url;
+  document.getElementById('appleIcon').href = iconData;
+})();
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1f2438;
+    --border: #2a2f45;
+    --urgent: #ff4d4d;
+    --urgent-dim: rgba(255,77,77,0.12);
+    --high: #f5a623;
+    --high-dim: rgba(245,166,35,0.12);
+    --routine: #3ecf8e;
+    --routine-dim: rgba(62,207,142,0.12);
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --accent: #5b8dee;
+    --accent-dim: rgba(91,141,238,0.15);
+    --online: #3ecf8e;
+    --offline: #ff4d4d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .logo span {
+    color: var(--accent);
+  }
+
+  .tagline {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  .status-pill.online { border-color: var(--online); color: var(--online); }
+  .status-pill.online .status-dot { background: var(--online); }
+  .status-pill.offline { border-color: var(--offline); color: var(--offline); }
+  .status-pill.offline .status-dot { background: var(--offline); animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .sync-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 16px;
+    border-radius: 8px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .sync-btn:hover { background: var(--accent); color: #fff; }
+  .sync-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .sync-btn svg { transition: transform 0.5s; }
+  .sync-btn.syncing svg { animation: spin 1s linear infinite; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Main layout */
+  .main {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* Summary bar */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: var(--accent); }
+
+  .stat-label {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .stat-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    line-height: 1;
+  }
+
+  .stat-card.urgent .stat-value { color: var(--urgent); }
+  .stat-card.high .stat-value { color: var(--high); }
+  .stat-card.routine .stat-value { color: var(--routine); }
+  .stat-card.total .stat-value { color: var(--text); }
+
+  /* Add task form */
+  .add-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group label {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .form-group select option { background: var(--surface); }
+
+  .form-row2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .add-btn {
+    padding: 10px 24px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    align-self: end;
+  }
+
+  .add-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  /* Filter tabs */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .filter-label {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+
+  .filter-tab {
+    padding: 6px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-tab.urgent.active { background: var(--urgent); border-color: var(--urgent); }
+  .filter-tab.high.active { background: var(--high); border-color: var(--high); }
+  .filter-tab.routine.active { background: var(--routine); border-color: var(--routine); }
+
+  /* Task columns */
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .column {
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .col-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .col-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+  }
+
+  .col-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .col-icon {
+    font-size: 16px;
+  }
+
+  .column.urgent .col-header { background: var(--urgent-dim); border-bottom-color: rgba(255,77,77,0.2); }
+  .column.urgent .col-badge { background: var(--urgent-dim); color: var(--urgent); }
+  .column.urgent .col-title { color: var(--urgent); }
+
+  .column.high .col-header { background: var(--high-dim); border-bottom-color: rgba(245,166,35,0.2); }
+  .column.high .col-badge { background: var(--high-dim); color: var(--high); }
+  .column.high .col-title { color: var(--high); }
+
+  .column.routine .col-header { background: var(--routine-dim); border-bottom-color: rgba(62,207,142,0.2); }
+  .column.routine .col-badge { background: var(--routine-dim); color: var(--routine); }
+  .column.routine .col-title { color: var(--routine); }
+
+  .col-meta {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+  }
+
+  .col-tasks {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 180px;
+    max-height: 520px;
+    overflow-y: auto;
+  }
+
+  .col-tasks::-webkit-scrollbar { width: 4px; }
+  .col-tasks::-webkit-scrollbar-track { background: transparent; }
+  .col-tasks::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* Task card */
+  .task-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    position: relative;
+    transition: all 0.2s;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .task-card:hover { border-color: var(--accent); transform: translateX(2px); }
+
+  .task-card.done {
+    opacity: 0.5;
+  }
+
+  .task-card.done .task-title {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  .task-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .task-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .task-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 1;
+  }
+
+  .task-action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+
+  .task-action-btn:hover { background: var(--surface); color: var(--text); }
+  .task-action-btn.done-btn:hover { background: var(--routine-dim); color: var(--routine); border-color: var(--routine); }
+  .task-action-btn.del-btn:hover { background: var(--urgent-dim); color: var(--urgent); border-color: var(--urgent); }
+
+  .task-note {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+
+  .task-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .task-deadline {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .task-deadline.overdue { color: var(--urgent); }
+  .task-deadline.soon { color: var(--high); }
+
+  .task-synced {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    border: 1px solid;
+  }
+
+  .task-synced.synced { color: var(--routine); border-color: rgba(62,207,142,0.3); }
+  .task-synced.pending { color: var(--high); border-color: rgba(245,166,35,0.3); }
+
+  .empty-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  .empty-icon { font-size: 32px; opacity: 0.3; }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .toast {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    border: 1px solid;
+    animation: toastIn 0.3s ease;
+    backdrop-filter: blur(12px);
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .toast.success { background: rgba(62,207,142,0.1); border-color: var(--routine); color: var(--routine); }
+  .toast.error { background: rgba(255,77,77,0.1); border-color: var(--urgent); color: var(--urgent); }
+  .toast.info { background: rgba(91,141,238,0.1); border-color: var(--accent); color: var(--accent); }
+
+  /* Sync log */
+  .sync-log-section {
+    margin-top: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .sync-log-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sync-log-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .sync-log-clear {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .sync-log-clear:hover { color: var(--urgent); background: var(--urgent-dim); }
+
+  .sync-log-entries {
+    padding: 12px 20px;
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .log-entry {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    gap: 12px;
+  }
+
+  .log-time { color: var(--accent); flex-shrink: 0; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    width: 90%;
+    max-width: 480px;
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  .btn-cancel {
+    padding: 9px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-cancel:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-save {
+    padding: 9px 20px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-save:hover { opacity: 0.85; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .columns { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .summary-bar { grid-template-columns: repeat(2, 1fr); }
+    .header { padding: 0 16px; }
+    .main { padding: 20px 12px; }
+  }
+
+  @media (max-width: 540px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-row2 { grid-template-columns: 1fr; }
+    .summary-bar { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ── Chat Panel ─────────────────────────────────────────── */
+  .chat-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    z-index: 600; align-items: flex-end; justify-content: flex-end;
+  }
+  .chat-overlay.open { display: flex; }
+  .chat-panel {
+    background: var(--surface); border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border); width: 420px; max-width: 100vw;
+    height: 100vh; display: flex; flex-direction: column;
+    animation: slideFromRight 0.28s ease;
+  }
+  @keyframes slideFromRight {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .chat-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); background: var(--surface2); flex-shrink: 0; }
+  .chat-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+  .chat-task-title { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.3; flex: 1; }
+  .chat-close { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+  .chat-close:hover { background: var(--urgent-dim); color: var(--urgent); border-color: var(--urgent); }
+  .chat-task-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .chat-priority-badge { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 100px; border: 1px solid; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chat-priority-badge.urgent { color: var(--urgent); border-color: rgba(255,77,77,0.3); background: var(--urgent-dim); }
+  .chat-priority-badge.high { color: var(--high); border-color: rgba(245,166,35,0.3); background: var(--high-dim); }
+  .chat-priority-badge.routine { color: var(--routine); border-color: rgba(62,207,142,0.3); background: var(--routine-dim); }
+  .chat-assignee-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .chat-sender-bar { padding: 10px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: var(--bg); flex-shrink: 0; }
+  .chat-sender-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .chat-sender-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 6px 10px; outline: none; }
+  .chat-sender-input:focus { border-color: var(--accent); }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .chat-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; font-style: italic; padding: 40px 0; }
+  .chat-empty-icon { font-size: 36px; opacity: 0.25; }
+  .chat-msg { display: flex; flex-direction: column; gap: 3px; animation: msgIn 0.2s ease; max-width: 88%; }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .chat-msg.self { align-self: flex-end; align-items: flex-end; }
+  .chat-msg.other { align-self: flex-start; align-items: flex-start; }
+  .chat-msg-meta { display: flex; align-items: center; gap: 6px; }
+  .chat-msg-sender { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); font-weight: 500; }
+  .chat-msg.other .chat-msg-sender { color: var(--routine); }
+  .chat-msg-time { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+  .chat-bubble { padding: 10px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; word-break: break-word; }
+  .chat-msg.self .chat-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .chat-msg.other .chat-bubble { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
+  .chat-msg-del { font-size: 10px; color: var(--muted); background: transparent; border: none; cursor: pointer; padding: 0 4px; transition: color 0.2s; align-self: center; }
+  .chat-msg-del:hover { color: var(--urgent); }
+  .chat-status-msg { align-self: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 100px; padding: 4px 12px; text-align: center; }
+  .chat-input-area { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--surface2); flex-shrink: 0; }
+  .chat-input-row { display: flex; gap: 10px; align-items: flex-end; }
+  .chat-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px 14px; resize: none; outline: none; max-height: 120px; min-height: 42px; transition: border-color 0.2s; line-height: 1.4; }
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-send-btn { width: 42px; height: 42px; border-radius: 12px; border: none; background: var(--accent); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .chat-send-btn:hover { opacity: 0.85; transform: scale(1.05); }
+  .chat-send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  .chat-btn-wrap { position: relative; display: inline-flex; }
+  .unread-badge { position: absolute; top: -5px; right: -5px; background: var(--urgent); color: #fff; font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 700; border-radius: 100px; padding: 1px 4px; min-width: 14px; text-align: center; line-height: 1.4; pointer-events: none; }
+  .task-action-btn.chat-btn { color: var(--accent); border-color: rgba(91,141,238,0.4); background: rgba(91,141,238,0.08); }
+  @media (max-width: 600px) { .chat-panel { width: 100vw; } }
+
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">OIC<span>Board</span></div>
+    <div class="tagline">PCA-ARC</div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill" id="statusPill">
+      <div class="status-dot"></div>
+      <span id="statusText">Checking…</span>
+    </div>
+    <button class="sync-btn" id="syncBtn" onclick="manualSync()">
+      <svg id="syncIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>
+      </svg>
+      Sync Now
+    </button>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Summary -->
+  <div class="summary-bar">
+    <div class="stat-card urgent">
+      <div class="stat-label">🔴 Urgent</div>
+      <div class="stat-value" id="countUrgent">0</div>
+    </div>
+    <div class="stat-card high">
+      <div class="stat-label">🟠 High Priority</div>
+      <div class="stat-value" id="countHigh">0</div>
+    </div>
+    <div class="stat-card routine">
+      <div class="stat-label">🟢 Routine</div>
+      <div class="stat-value" id="countRoutine">0</div>
+    </div>
+    <div class="stat-card total">
+      <div class="stat-label">📋 Total Active</div>
+      <div class="stat-value" id="countTotal">0</div>
+    </div>
+  </div>
+
+  <!-- Add Task -->
+  <div class="add-section">
+    <div class="section-title"><div class="dot"></div> Add Task for OIC</div>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column: 1 / -1">
+        <label>Task / Action Item</label>
+        <input type="text" id="taskTitle" placeholder="Describe the task or directive…" />
+      </div>
+      <div class="form-group">
+        <label>Priority Level</label>
+        <select id="taskPriority">
+          <option value="urgent">🔴 Urgent</option>
+          <option value="high">🟠 High Priority</option>
+          <option value="routine" selected>🟢 Routine</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Deadline</label>
+        <input type="date" id="taskDeadline" />
+      </div>
+    </div>
+    <div class="form-row2">
+      <div class="form-group">
+        <label>Notes / Instructions for OIC</label>
+        <input type="text" id="taskNote" placeholder="Optional: context, action required, dependencies…" />
+      </div>
+      <div class="form-group">
+        <label>Assigned To</label>
+        <input type="text" id="taskAssignee" placeholder="Name or unit" />
+      </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+      <button class="add-btn" onclick="addTask()">+ Add Task</button>
+    </div>
+  </div>
+
+  <!-- Filter row -->
+  <div class="filter-row">
+    <span class="filter-label">FILTER:</span>
+    <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-tab urgent" onclick="setFilter('urgent', this)">Urgent</button>
+    <button class="filter-tab high" onclick="setFilter('high', this)">High Priority</button>
+    <button class="filter-tab routine" onclick="setFilter('routine', this)">Routine</button>
+    <button class="filter-tab" onclick="setFilter('pending', this)">⏳ Pending Sync</button>
+    <button class="filter-tab" onclick="setFilter('done', this)">✅ Done</button>
+  </div>
+
+  <!-- Task columns -->
+  <div class="columns">
+    <div class="column urgent">
+      <div class="col-header">
+        <div class="col-title">
+          <span class="col-icon">🔴</span>
+          Urgent
+          <div class="col-badge" id="badgeUrgent">0</div>
+        </div>
+        <div class="col-meta">Act immediately</div>
+      </div>
+      <div class="col-tasks" id="colUrgent"></div>
+    </div>
+    <div class="column high">
+      <div class="col-header">
+        <div class="col-title">
+          <span class="col-icon">🟠</span>
+          High Priority
+          <div class="col-badge" id="badgeHigh">0</div>
+        </div>
+        <div class="col-meta">Within the day/week</div>
+      </div>
+      <div class="col-tasks" id="colHigh"></div>
+    </div>
+    <div class="column routine">
+      <div class="col-header">
+        <div class="col-title">
+          <span class="col-icon">🟢</span>
+          Routine
+          <div class="col-badge" id="badgeRoutine">0</div>
+        </div>
+        <div class="col-meta">Standard workflow</div>
+      </div>
+      <div class="col-tasks" id="colRoutine"></div>
+    </div>
+  </div>
+
+  <!-- Sync log -->
+  <div class="sync-log-section">
+    <div class="sync-log-header">
+      <div class="sync-log-title">📡 Sync Activity Log</div>
+      <button class="sync-log-clear" onclick="clearLog()">Clear</button>
+    </div>
+    <div class="sync-log-entries" id="syncLog">
+      <div class="log-entry"><span class="log-time">—</span><span>No sync activity yet.</span></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Edit modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">Edit Task</div>
+    <div class="modal-sub">Update task details below.</div>
+    <input type="hidden" id="editId" />
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Task Title</label>
+      <input type="text" id="editTitle" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="form-group">
+        <label>Priority</label>
+        <select id="editPriority">
+          <option value="urgent">🔴 Urgent</option>
+          <option value="high">🟠 High Priority</option>
+          <option value="routine">🟢 Routine</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Deadline</label>
+        <input type="date" id="editDeadline" />
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Notes</label>
+      <input type="text" id="editNote" />
+    </div>
+    <div class="form-group">
+      <label>Assigned To</label>
+      <input type="text" id="editAssignee" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Chat Panel -->
+<div class="chat-overlay" id="chatOverlay" onclick="handleOverlayClick(event)">
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-header">
+      <div class="chat-header-top">
+        <div class="chat-task-title" id="chatTaskTitle">Task</div>
+        <button class="chat-close" onclick="closeChat()">✕</button>
+      </div>
+      <div class="chat-task-meta">
+        <span class="chat-priority-badge" id="chatPriorityBadge"></span>
+        <span class="chat-assignee-meta" id="chatAssigneeMeta"></span>
+      </div>
+    </div>
+    <div class="chat-sender-bar">
+      <span class="chat-sender-label">YOU ARE:</span>
+      <input class="chat-sender-input" id="chatSenderName" placeholder="Enter your name…" maxlength="40" />
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chatInput" placeholder="Type an update…" rows="1"
+          onkeydown="handleChatKey(event)"></textarea>
+        <button class="chat-send-btn" onclick="sendChatMsg()" id="chatSendBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── Storage ──────────────────────────────────────────────────────
+const STORAGE_KEY = 'oicboard_tasks_v2';
+const LOG_KEY = 'oicboard_log_v1';
+
+function loadTasks() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveTasks(tasks) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
+
+function loadLog() {
+  try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveLog(log) {
+  localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(-50)));
+}
+
+// ── State ────────────────────────────────────────────────────────
+let tasks = loadTasks();
+let log = loadLog();
+let isOnline = navigator.onLine;
+let currentFilter = 'all';
+
+// ── ID generator ─────────────────────────────────────────────────
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// ── Filters ───────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function filteredTasks(priority) {
+  return tasks.filter(t => {
+    if (t.priority !== priority) return false;
+    if (currentFilter === 'all') return true;
+    if (currentFilter === priority) return true;
+    if (currentFilter === 'pending') return !t.synced;
+    if (currentFilter === 'done') return t.done;
+    return false;
+  });
+}
+
+// ── Deadline helpers ──────────────────────────────────────────────
+function deadlineClass(dateStr) {
+  if (!dateStr) return '';
+  const diff = (new Date(dateStr) - new Date()) / 86400000;
+  if (diff < 0) return 'overdue';
+  if (diff <= 2) return 'soon';
+  return '';
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function render() {
+  ['urgent', 'high', 'routine'].forEach(p => {
+    const col = document.getElementById('col' + cap(p));
+    const list = filteredTasks(p);
+    col.innerHTML = '';
+    if (!list.length) {
+      col.innerHTML = `<div class="empty-col"><div class="empty-icon">—</div><span>No tasks here</span></div>`;
+    } else {
+      list.forEach(t => col.appendChild(makeCard(t)));
+    }
+  });
+  updateCounts();
+  renderLog();
+}
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function makeCard(t) {
+  const card = document.createElement('div');
+  card.className = 'task-card' + (t.done ? ' done' : '');
+  card.dataset.id = t.id;
+
+  const dlClass = t.done ? '' : deadlineClass(t.deadline);
+  const dlLabel = t.deadline
+    ? `<span class="task-deadline ${dlClass}">📅 ${formatDate(t.deadline)}${dlClass === 'overdue' ? ' · OVERDUE' : dlClass === 'soon' ? ' · Soon' : ''}</span>`
+    : '';
+  const assignee = t.assignee ? `<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">👤 ${t.assignee}</span>` : '';
+  const syncPill = `<span class="task-synced ${t.synced ? 'synced' : 'pending'}">${t.synced ? '✓ synced' : '⏳ pending'}</span>`;
+
+  card.innerHTML = `
+    <div class="task-header">
+      <div class="task-title">${escHtml(t.title)}</div>
+      <div class="task-actions">
+        <button class="task-action-btn done-btn" title="${t.done ? 'Mark undone' : 'Mark done'}" onclick="toggleDone('${t.id}')">
+          ${t.done ? '↩' : '✓'}
+        </button>
+        <div class="chat-btn-wrap">
+          <button class="task-action-btn chat-btn" title="Task Chat" onclick="openChat('${t.id}')">💬</button>
+          ${(t.messages && t.messages.filter(m => !m.read).length) ? `<span class="unread-badge">${t.messages.filter(m => !m.read).length}</span>` : ''}
+        </div>
+        <button class="task-action-btn" title="Edit" onclick="openEdit('${t.id}')">✎</button>
+        <button class="task-action-btn del-btn" title="Delete" onclick="deleteTask('${t.id}')">✕</button>
+      </div>
+    </div>
+    ${t.note ? `<div class="task-note">${escHtml(t.note)}</div>` : ''}
+    <div class="task-footer">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        ${dlLabel}
+        ${assignee}
+      </div>
+      ${syncPill}
+    </div>`;
+  return card;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateCounts() {
+  const active = tasks.filter(t => !t.done);
+  const u = active.filter(t => t.priority === 'urgent').length;
+  const h = active.filter(t => t.priority === 'high').length;
+  const r = active.filter(t => t.priority === 'routine').length;
+  document.getElementById('countUrgent').textContent = u;
+  document.getElementById('countHigh').textContent = h;
+  document.getElementById('countRoutine').textContent = r;
+  document.getElementById('countTotal').textContent = u + h + r;
+  document.getElementById('badgeUrgent').textContent = u;
+  document.getElementById('badgeHigh').textContent = h;
+  document.getElementById('badgeRoutine').textContent = r;
+}
+
+// ── Add / Edit / Delete ───────────────────────────────────────────
+function addTask() {
+  const title = document.getElementById('taskTitle').value.trim();
+  if (!title) { showToast('Please enter a task title.', 'error'); return; }
+
+  const task = {
+    id: uid(),
+    title,
+    priority: document.getElementById('taskPriority').value,
+    deadline: document.getElementById('taskDeadline').value,
+    note: document.getElementById('taskNote').value.trim(),
+    assignee: document.getElementById('taskAssignee').value.trim(),
+    done: false,
+    synced: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  tasks.unshift(task);
+  saveTasks(tasks);
+  addLogEntry(`New task added: "${title}" [${task.priority}]`);
+  render();
+  showToast('Task added. Will sync when online.', 'success');
+
+  // Clear form
+  document.getElementById('taskTitle').value = '';
+  document.getElementById('taskNote').value = '';
+  document.getElementById('taskAssignee').value = '';
+  document.getElementById('taskDeadline').value = '';
+  document.getElementById('taskPriority').value = 'routine';
+
+  if (isOnline) autoSync();
+}
+
+function toggleDone(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  t.done = !t.done;
+  t.synced = false;
+  t.updatedAt = new Date().toISOString();
+  saveTasks(tasks);
+  addLogEntry(`Task "${t.title.slice(0,30)}" marked ${t.done ? 'done' : 'undone'}`);
+  render();
+  if (isOnline) autoSync();
+}
+
+function deleteTask(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  if (!confirm(`Delete task "${t.title}"?`)) return;
+  tasks = tasks.filter(x => x.id !== id);
+  saveTasks(tasks);
+  addLogEntry(`Task deleted: "${t.title.slice(0,30)}"`);
+  render();
+  showToast('Task deleted.', 'info');
+}
+
+function openEdit(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  document.getElementById('editId').value = t.id;
+  document.getElementById('editTitle').value = t.title;
+  document.getElementById('editPriority').value = t.priority;
+  document.getElementById('editDeadline').value = t.deadline || '';
+  document.getElementById('editNote').value = t.note || '';
+  document.getElementById('editAssignee').value = t.assignee || '';
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('open');
+}
+
+function saveEdit() {
+  const id = document.getElementById('editId').value;
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  t.title = document.getElementById('editTitle').value.trim();
+  t.priority = document.getElementById('editPriority').value;
+  t.deadline = document.getElementById('editDeadline').value;
+  t.note = document.getElementById('editNote').value.trim();
+  t.assignee = document.getElementById('editAssignee').value.trim();
+  t.synced = false;
+  t.updatedAt = new Date().toISOString();
+  saveTasks(tasks);
+  closeModal();
+  render();
+  addLogEntry(`Task updated: "${t.title.slice(0,30)}"`);
+  showToast('Task updated.', 'success');
+  if (isOnline) autoSync();
+}
+
+// ── Sync ─────────────────────────────────────────────────────────
+// This function marks all pending tasks as synced.
+// To connect a real backend (e.g. Google Sheets API or your own server),
+// replace the body of syncToServer() with your actual API call.
+async function syncToServer(pendingTasks) {
+  // ── REPLACE THIS BLOCK WITH YOUR ACTUAL API ENDPOINT ──────────
+  // Example Google Sheets via Apps Script Web App URL:
+  // const SHEET_URL = 'https://script.google.com/macros/s/YOUR_ID/exec';
+  // const res = await fetch(SHEET_URL, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ tasks: pendingTasks })
+  // });
+  // if (!res.ok) throw new Error('Server error');
+  // ──────────────────────────────────────────────────────────────
+  
+  // SIMULATED SYNC (remove when using a real endpoint):
+  await new Promise(r => setTimeout(r, 800 + Math.random() * 400));
+  // Simulate occasional failure for demo
+  if (Math.random() < 0.08) throw new Error('Simulated network error');
+  return true;
+}
+
+async function autoSync() {
+  const pending = tasks.filter(t => !t.synced);
+  if (!pending.length) return;
+  try {
+    await syncToServer(pending);
+    pending.forEach(t => { const found = tasks.find(x => x.id === t.id); if (found) found.synced = true; });
+    saveTasks(tasks);
+    addLogEntry(`✓ Synced ${pending.length} task(s) to server`);
+    render();
+    showToast(`${pending.length} task(s) synced.`, 'success');
+  } catch (e) {
+    addLogEntry(`✗ Sync failed: ${e.message}`);
+  }
+}
+
+async function manualSync() {
+  if (!isOnline) { showToast('You are offline. Sync will happen automatically when you reconnect.', 'error'); return; }
+  const btn = document.getElementById('syncBtn');
+  const icon = document.getElementById('syncIcon');
+  btn.classList.add('syncing');
+  btn.disabled = true;
+  addLogEntry('Manual sync triggered…');
+  try {
+    await autoSync();
+  } finally {
+    btn.classList.remove('syncing');
+    btn.disabled = false;
+  }
+}
+
+// ── Connectivity ──────────────────────────────────────────────────
+function updateStatus() {
+  isOnline = navigator.onLine;
+  const pill = document.getElementById('statusPill');
+  const text = document.getElementById('statusText');
+  if (isOnline) {
+    pill.className = 'status-pill online';
+    text.textContent = 'Online';
+  } else {
+    pill.className = 'status-pill offline';
+    text.textContent = 'Offline';
+  }
+}
+
+window.addEventListener('online', () => {
+  updateStatus();
+  addLogEntry('Connection restored — starting auto-sync…');
+  showToast('Back online! Syncing pending tasks…', 'info');
+  autoSync();
+});
+
+window.addEventListener('offline', () => {
+  updateStatus();
+  addLogEntry('Connection lost — tasks saved locally');
+  showToast('Offline mode — tasks saved locally.', 'error');
+});
+
+// ── Log ───────────────────────────────────────────────────────────
+function addLogEntry(msg) {
+  const now = new Date().toLocaleTimeString('en-PH', { hour12: false });
+  log.unshift({ time: now, msg });
+  saveLog(log);
+  renderLog();
+}
+
+function renderLog() {
+  const el = document.getElementById('syncLog');
+  if (!log.length) {
+    el.innerHTML = `<div class="log-entry"><span class="log-time">—</span><span>No sync activity yet.</span></div>`;
+    return;
+  }
+  el.innerHTML = log.slice(0, 20).map(e =>
+    `<div class="log-entry"><span class="log-time">${e.time}</span><span>${escHtml(e.msg)}</span></div>`
+  ).join('');
+}
+
+function clearLog() {
+  log = [];
+  saveLog(log);
+  renderLog();
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 3000);
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+updateStatus();
+render();
+renderLog();
+
+// Auto-sync on load if online and there are pending
+if (isOnline && tasks.some(t => !t.synced)) {
+  setTimeout(() => autoSync(), 1000);
+}
+
+// Periodic check every 30s
+setInterval(() => {
+  if (isOnline && tasks.some(t => !t.synced)) autoSync();
+}, 30000);
+
+
+// ── Chat ──────────────────────────────────────────────────────────
+const SENDER_KEY = 'oicboard_sender';
+let activeChatId = null;
+
+function openChat(taskId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+  activeChatId = taskId;
+
+  // Mark all messages read
+  if (t.messages) t.messages.forEach(m => m.read = true);
+  saveTasks(tasks);
+  render();
+
+  // Populate header
+  document.getElementById('chatTaskTitle').textContent = t.title;
+  const pb = document.getElementById('chatPriorityBadge');
+  pb.textContent = { urgent: '🔴 Urgent', high: '🟠 High Priority', routine: '🟢 Routine' }[t.priority];
+  pb.className = 'chat-priority-badge ' + t.priority;
+  const am = document.getElementById('chatAssigneeMeta');
+  am.textContent = t.assignee ? '👤 ' + t.assignee : '';
+
+  // Restore sender name
+  const saved = localStorage.getItem(SENDER_KEY) || '';
+  document.getElementById('chatSenderName').value = saved;
+
+  renderChatMessages(t);
+  document.getElementById('chatOverlay').classList.add('open');
+  setTimeout(() => {
+    document.getElementById('chatInput').focus();
+    scrollChatBottom();
+  }, 100);
+}
+
+function closeChat() {
+  document.getElementById('chatOverlay').classList.remove('open');
+  activeChatId = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('chatOverlay')) closeChat();
+}
+
+function renderChatMessages(t) {
+  const container = document.getElementById('chatMessages');
+  const msgs = t.messages || [];
+  if (!msgs.length) {
+    container.innerHTML = `<div class="chat-empty"><div class="chat-empty-icon">💬</div><span>No updates yet. Be the first to post.</span></div>`;
+    return;
+  }
+  container.innerHTML = '';
+  const currentSender = document.getElementById('chatSenderName').value.trim();
+
+  // Group by date
+  let lastDate = '';
+  msgs.forEach((m, i) => {
+    const msgDate = new Date(m.ts).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+    if (msgDate !== lastDate) {
+      lastDate = msgDate;
+      const sep = document.createElement('div');
+      sep.className = 'chat-status-msg';
+      sep.textContent = msgDate;
+      container.appendChild(sep);
+    }
+
+    const isSelf = currentSender && m.sender === currentSender;
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + (isSelf ? 'self' : 'other');
+
+    const time = new Date(m.ts).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true });
+    div.innerHTML = `
+      <div class="chat-msg-meta">
+        <span class="chat-msg-sender">${escHtml(m.sender)}</span>
+        <span class="chat-msg-time">${time}</span>
+        ${isSelf ? `<button class="chat-msg-del" onclick="deleteChatMsg('${m.id}')" title="Delete">✕</button>` : ''}
+      </div>
+      <div class="chat-bubble">${escHtml(m.text).replace(/\n/g, '<br>')}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function scrollChatBottom() {
+  const c = document.getElementById('chatMessages');
+  c.scrollTop = c.scrollHeight;
+}
+
+function sendChatMsg() {
+  if (!activeChatId) return;
+  const senderEl = document.getElementById('chatSenderName');
+  const inputEl = document.getElementById('chatInput');
+  const sender = senderEl.value.trim();
+  const text = inputEl.value.trim();
+
+  if (!sender) { senderEl.focus(); showToast('Please enter your name first.', 'error'); return; }
+  if (!text) return;
+
+  localStorage.setItem(SENDER_KEY, sender);
+
+  const t = tasks.find(x => x.id === activeChatId);
+  if (!t) return;
+  if (!t.messages) t.messages = [];
+
+  const msg = {
+    id: uid(),
+    sender,
+    text,
+    ts: new Date().toISOString(),
+    read: true
+  };
+
+  t.messages.push(msg);
+  t.synced = false;
+  t.updatedAt = new Date().toISOString();
+  saveTasks(tasks);
+  render();
+
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+  renderChatMessages(t);
+  scrollChatBottom();
+  if (isOnline) autoSync();
+}
+
+function deleteChatMsg(msgId) {
+  if (!activeChatId) return;
+  const t = tasks.find(x => x.id === activeChatId);
+  if (!t || !t.messages) return;
+  t.messages = t.messages.filter(m => m.id !== msgId);
+  t.synced = false;
+  t.updatedAt = new Date().toISOString();
+  saveTasks(tasks);
+  render();
+  renderChatMessages(t);
+}
+
+function handleChatKey(e) {
+  const ta = document.getElementById('chatInput');
+  // Auto-resize
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+  // Enter to send, Shift+Enter for newline
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMsg();
+  }
+}
+
+// Re-render chat when sender name changes
+document.addEventListener('DOMContentLoaded', () => {
+  const si = document.getElementById('chatSenderName');
+  if (si) si.addEventListener('input', () => {
+    if (activeChatId) {
+      const t = tasks.find(x => x.id === activeChatId);
+      if (t) renderChatMessages(t);
+    }
+  });
+});
+
+// ── Service Worker (inline via Blob URL) ──────────────────────────
+(function registerSW() {
+  const swCode = `
+    const CACHE = 'oicboard-v1';
+    self.addEventListener('install', e => {
+      e.waitUntil(
+        caches.open(CACHE).then(c => c.addAll(['./', self.location.href]))
+      );
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(caches.keys().then(keys =>
+        Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      ));
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+      );
+    });
+  `;
+  if ('serviceWorker' in navigator) {
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url, { scope: './' })
+      .then(() => addLogEntry('✓ Service worker registered (offline cache active)'))
+      .catch(e => addLogEntry('⚠ SW registration skipped: ' + e.message));
+  }
+})();
+
+// ── Install Prompt (Add to Home Screen) ──────────────────────────
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = `
+    position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+    background:#181c27;border:1px solid #5b8dee;border-radius:14px;
+    padding:14px 20px;display:flex;align-items:center;gap:14px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:998;
+    font-family:'DM Sans',sans-serif;font-size:13px;color:#e8eaf0;
+    animation:toastIn 0.3s ease;max-width:90vw;
+  `;
+  banner.innerHTML = `
+    <span style="font-size:22px">📲</span>
+    <div>
+      <div style="font-weight:600;margin-bottom:2px">Install OIC Board</div>
+      <div style="color:#6b7280;font-size:12px">Add to your home screen for quick access</div>
+    </div>
+    <button onclick="installApp()" style="
+      padding:8px 16px;border-radius:8px;border:none;background:#5b8dee;
+      color:#fff;font-weight:600;cursor:pointer;font-size:13px;white-space:nowrap;
+    ">Install</button>
+    <button onclick="document.getElementById('installBanner').remove()" style="
+      background:transparent;border:none;color:#6b7280;cursor:pointer;
+      font-size:18px;padding:0 4px;line-height:1;
+    ">✕</button>
+  `;
+  document.body.appendChild(banner);
+});
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  addLogEntry(outcome === 'accepted' ? '✓ App installed to home screen' : 'Install prompt dismissed');
+  deferredPrompt = null;
+  const b = document.getElementById('installBanner');
+  if (b) b.remove();
+}
+
+window.addEventListener('appinstalled', () => {
+  showToast('OIC Board installed successfully!', 'success');
+  addLogEntry('✓ App installed on device');
+});
+</script>
+</body>
+</html>
