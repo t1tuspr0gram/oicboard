@@ -13,26 +13,12 @@
 <link rel="apple-touch-icon" id="appleIcon">
 <script>
 (function(){
-  var manifest={name:"OIC Task Board — PCA-ARC",short_name:"OIC Board",description:"Manage urgent, high priority and routine tasks. Works offline.",start_url:"./",display:"standalone",background_color:"#0f1117",theme_color:"#0f1117",orientation:"portrait-primary",icons:[]};
-  function genIcon(size){
-    var c=document.createElement('canvas');c.width=size;c.height=size;
-    var x=c.getContext('2d');
-    x.fillStyle='#0f1117';x.fillRect(0,0,size,size);
-    x.fillStyle='#5b8dee';var r=size*.18,m=size*.12,w=size*.76;
-    x.beginPath();x.moveTo(m+r,m);x.lineTo(m+w-r,m);x.quadraticCurveTo(m+w,m,m+w,m+r);
-    x.lineTo(m+w,m+w-r);x.quadraticCurveTo(m+w,m+w,m+w-r,m+w);
-    x.lineTo(m+r,m+w);x.quadraticCurveTo(m,m+w,m,m+w-r);
-    x.lineTo(m,m+r);x.quadraticCurveTo(m,m,m+r,m);x.closePath();x.fill();
-    [['#ff4d4d',.32],['#f5a623',.5],['#3ecf8e',.68]].forEach(function(d){
-      x.fillStyle=d[0];x.beginPath();x.arc(size*.38,size*d[1],size*.055,0,Math.PI*2);x.fill();
-    });
-    return c.toDataURL('image/png');
-  }
-  var icon=genIcon(192);
-  manifest.icons=[{src:icon,sizes:"192x192",type:"image/png"},{src:genIcon(512),sizes:"512x512",type:"image/png"}];
-  var blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
-  document.getElementById('manifestLink').href=URL.createObjectURL(blob);
-  document.getElementById('appleIcon').href=icon;
+  var m={name:"OIC Task Board — PCA-ARC",short_name:"OIC Board",start_url:"./",display:"standalone",background_color:"#0f1117",theme_color:"#0f1117",icons:[]};
+  function gi(sz){var c=document.createElement('canvas');c.width=sz;c.height=sz;var x=c.getContext('2d');x.fillStyle='#0f1117';x.fillRect(0,0,sz,sz);x.fillStyle='#5b8dee';var r=sz*.18,p=sz*.12,w=sz*.76;x.beginPath();x.moveTo(p+r,p);x.lineTo(p+w-r,p);x.quadraticCurveTo(p+w,p,p+w,p+r);x.lineTo(p+w,p+w-r);x.quadraticCurveTo(p+w,p+w,p+w-r,p+w);x.lineTo(p+r,p+w);x.quadraticCurveTo(p,p+w,p,p+w-r);x.lineTo(p,p+r);x.quadraticCurveTo(p,p,p+r,p);x.closePath();x.fill();[['#ff4d4d',.32],['#f5a623',.5],['#3ecf8e',.68]].forEach(function(d){x.fillStyle=d[0];x.beginPath();x.arc(sz*.38,sz*d[1],sz*.055,0,Math.PI*2);x.fill();});return c.toDataURL('image/png');}
+  var ic=gi(192);m.icons=[{src:ic,sizes:"192x192",type:"image/png"},{src:gi(512),sizes:"512x512",type:"image/png"}];
+  var b=new Blob([JSON.stringify(m)],{type:'application/json'});
+  document.getElementById('manifestLink').href=URL.createObjectURL(b);
+  document.getElementById('appleIcon').href=ic;
 })();
 </script>
 <style>
@@ -46,26 +32,25 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
-/* Header */
-.header{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;}
-.logo{font-family:'DM Serif Display',serif;font-size:22px;letter-spacing:-0.5px;}
+.header{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.logo{font-family:'DM Serif Display',serif;font-size:22px;letter-spacing:-.5px;}
 .logo span{color:var(--accent);}
 .tagline{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-left:10px;}
 .header-left{display:flex;align-items:baseline;gap:4px;}
-.header-right{display:flex;align-items:center;gap:16px;}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .status-pill{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:100px;font-size:11px;font-family:'DM Mono',monospace;border:1px solid var(--border);transition:all .3s;}
-.status-dot{width:7px;height:7px;border-radius:50%;animation:pulse 2s infinite;}
+.status-dot{width:7px;height:7px;border-radius:50%;}
 .status-pill.online{border-color:var(--routine);color:var(--routine);}
-.status-pill.online .status-dot{background:var(--routine);}
+.status-pill.online .status-dot{background:var(--routine);animation:pulse 2s infinite;}
 .status-pill.offline{border-color:var(--urgent);color:var(--urgent);}
-.status-pill.offline .status-dot{background:var(--urgent);animation:none;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-.sync-btn{display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:8px;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all .2s;}
-.sync-btn:hover{background:var(--accent);color:#fff;}
-.sync-btn:disabled{opacity:.4;cursor:not-allowed;}
-.sync-btn.syncing svg{animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-/* Main */
+.status-pill.offline .status-dot{background:var(--urgent);}
+.status-pill.syncing-fb{border-color:var(--accent);color:var(--accent);}
+.status-pill.syncing-fb .status-dot{background:var(--accent);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.fb-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:100px;font-size:11px;font-family:'DM Mono',monospace;border:1px solid var(--routine);color:var(--routine);background:var(--routine-dim);}
+.fb-badge.disconnected{border-color:var(--urgent);color:var(--urgent);background:var(--urgent-dim);}
+.fb-badge.connecting{border-color:var(--high);color:var(--high);background:var(--high-dim);}
+.fb-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
 .main{max-width:1280px;margin:0 auto;padding:28px 20px;}
 /* Summary */
 .summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
@@ -78,7 +63,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* Add section */
 .add-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;}
 .section-title{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-.section-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.dot-accent{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .form-full{grid-column:1/-1;}
 .form-group{display:flex;flex-direction:column;gap:6px;}
@@ -88,6 +73,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .form-group select option{background:var(--surface);}
 .add-btn{padding:11px 28px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:all .2s;margin-top:14px;}
 .add-btn:hover{opacity:.85;}
+.add-btn:active{transform:scale(.98);}
 /* Filters */
 .filter-row{display:flex;gap:8px;margin-bottom:20px;align-items:center;flex-wrap:wrap;}
 .filter-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);}
@@ -135,10 +121,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .task-deadline{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
 .task-deadline.overdue{color:var(--urgent);}
 .task-deadline.soon{color:var(--high);}
-.task-synced{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:100px;border:1px solid;}
-.task-synced.synced{color:var(--routine);border-color:rgba(62,207,142,.3);}
-.task-synced.pending{color:var(--high);border-color:rgba(245,166,35,.3);}
 .col-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:36px 20px;color:var(--muted);font-size:13px;font-style:italic;}
+/* Loading overlay */
+.loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999;}
+.loading-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);}
 /* Edit Modal */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
@@ -167,7 +155,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .chat-badge.urgent{color:var(--urgent);border-color:rgba(255,77,77,.3);background:var(--urgent-dim);}
 .chat-badge.high{color:var(--high);border-color:rgba(245,166,35,.3);background:var(--high-dim);}
 .chat-badge.routine{color:var(--routine);border-color:rgba(62,207,142,.3);background:var(--routine-dim);}
-.chat-assignee{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.chat-assignee-info{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
 .sender-bar{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg);}
 .sender-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
 .sender-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;outline:none;}
@@ -239,7 +227,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .ptag.high{background:var(--high-dim);color:var(--high);}
 .ptag.routine{background:var(--routine-dim);color:var(--routine);}
 .audit-empty{padding:40px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;}
-/* Sync log */
 .sync-log-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .sync-log-title{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
 .clear-btn3{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:3px 8px;border-radius:4px;transition:all .2s;}
@@ -247,19 +234,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .sync-log-entries{padding:10px 16px;max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
 .log-entry{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);display:flex;gap:12px;}
 .log-time{color:var(--accent);flex-shrink:0;}
-/* Toast */
 .toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:10px;}
 .toast{padding:12px 20px;border-radius:10px;font-size:13px;font-family:'DM Mono',monospace;border:1px solid;animation:toastIn .3s ease;}
 @keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
 .toast.success{background:rgba(62,207,142,.1);border-color:var(--routine);color:var(--routine);}
 .toast.error{background:rgba(255,77,77,.1);border-color:var(--urgent);color:var(--urgent);}
 .toast.info{background:rgba(91,141,238,.1);border-color:var(--accent);color:var(--accent);}
-/* Responsive */
 @media(max-width:900px){.columns{grid-template-columns:1fr;}.summary-bar{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:600px){.form-grid{grid-template-columns:1fr;}.chat-panel{width:100vw;}.audit-row{grid-template-columns:1fr 1fr;}.audit-detail{grid-column:1/-1;}}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}.chat-panel{width:100vw;}.audit-row{grid-template-columns:1fr 1fr;}.audit-detail{grid-column:1/-1;}.header{padding:0 14px;}.header-right{gap:8px;}}
 </style>
 </head>
 <body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Connecting to Firebase…</div>
+</div>
 
 <header class="header">
   <div class="header-left">
@@ -267,19 +258,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="tagline">PCA-ARC</div>
   </div>
   <div class="header-right">
+    <div class="fb-badge connecting" id="fbBadge">
+      <div class="fb-dot"></div>
+      <span id="fbText">Connecting…</span>
+    </div>
     <div class="status-pill" id="statusPill">
       <div class="status-dot"></div>
       <span id="statusText">Checking…</span>
     </div>
-    <button class="sync-btn" id="syncBtn" onclick="manualSync()">
-      <svg id="syncIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-      Sync Now
-    </button>
   </div>
 </header>
 
 <main class="main">
-
   <div class="summary-bar">
     <div class="stat-card urgent"><div class="stat-label">🔴 Urgent</div><div class="stat-value" id="countUrgent">0</div></div>
     <div class="stat-card high"><div class="stat-label">🟠 High Priority</div><div class="stat-value" id="countHigh">0</div></div>
@@ -288,7 +278,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 
   <div class="add-section">
-    <div class="section-title"><div class="dot"></div>Add Task for OIC</div>
+    <div class="section-title"><div class="dot-accent"></div>Add Task for OIC</div>
     <div class="form-grid">
       <div class="form-group form-full">
         <label>Task / Action Item</label>
@@ -324,7 +314,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <button class="filter-tab" onclick="setFilter('urgent',this)">Urgent</button>
     <button class="filter-tab" onclick="setFilter('high',this)">High Priority</button>
     <button class="filter-tab" onclick="setFilter('routine',this)">Routine</button>
-    <button class="filter-tab" onclick="setFilter('pending',this)">⏳ Pending</button>
     <button class="filter-tab" onclick="setFilter('done',this)">✅ Done</button>
   </div>
 
@@ -355,7 +344,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="log-section">
     <div class="tabs-row">
       <button class="tab-btn active" onclick="switchTab('audit',this)">📋 Task History</button>
-      <button class="tab-btn" onclick="switchTab('sync',this)">📡 Sync Log</button>
+      <button class="tab-btn" onclick="switchTab('sync',this)">📡 Activity Log</button>
     </div>
     <div class="log-panel active" id="panelAudit">
       <div class="audit-toolbar">
@@ -377,15 +366,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <div class="log-panel" id="panelSync">
       <div class="sync-log-head">
-        <div class="sync-log-title">📡 Sync Activity Log</div>
+        <div class="sync-log-title">📡 Activity Log</div>
         <button class="clear-btn3" onclick="clearLog()">Clear</button>
       </div>
       <div class="sync-log-entries" id="syncLog">
-        <div class="log-entry"><span class="log-time">—</span><span>No sync activity yet.</span></div>
+        <div class="log-entry"><span class="log-time">—</span><span>No activity yet.</span></div>
       </div>
     </div>
   </div>
-
 </main>
 
 <!-- Edit Modal -->
@@ -437,7 +425,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </div>
       <div class="chat-meta">
         <span class="chat-badge" id="chatBadge"></span>
-        <span class="chat-assignee" id="chatAssignee"></span>
+        <span class="chat-assignee-info" id="chatAssigneeInfo"></span>
       </div>
     </div>
     <div class="sender-bar">
@@ -458,65 +446,107 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 <div class="toast-container" id="toastCont"></div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
 <script>
-// ── Constants ─────────────────────────────────────────────────────
-var TASKS_KEY = 'oicboard_tasks_v3';
-var LOG_KEY   = 'oicboard_log_v2';
-var AUDIT_KEY = 'oicboard_audit_v2';
-var SENDER_KEY= 'oicboard_sender';
+// ── Firebase Config ───────────────────────────────────────────────
+var firebaseConfig = {
+  apiKey: "AIzaSyC19KJaz88kwZtw9OkPDCCdJGijTsttb88",
+  authDomain: "oicboard-pca.firebaseapp.com",
+  databaseURL: "https://oicboard-pca-default-rtdb.firebaseio.com",
+  projectId: "oicboard-pca",
+  storageBucket: "oicboard-pca.firebasestorage.app",
+  messagingSenderId: "658580069338",
+  appId: "1:658580069338:web:34b0737a2653632e8a3ee3"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
 
 // ── State ─────────────────────────────────────────────────────────
-var tasks    = [];
-var logItems = [];
+var tasks = {};          // keyed by Firebase push ID
 var auditItems = [];
+var logItems = [];
 var isOnline = navigator.onLine;
 var curFilter = 'all';
 var curAuditFilter = 'all';
 var activeChatId = null;
-
-// ── Storage ───────────────────────────────────────────────────────
-function loadAll() {
-  try { tasks = JSON.parse(localStorage.getItem(TASKS_KEY)) || []; } catch(e){ tasks=[]; }
-  try { logItems = JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch(e){ logItems=[]; }
-  try { auditItems = JSON.parse(localStorage.getItem(AUDIT_KEY)) || []; } catch(e){ auditItems=[]; }
-}
-function saveTasks()  { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); }
-function saveLog()    { localStorage.setItem(LOG_KEY, JSON.stringify(logItems.slice(0,50))); }
-function saveAudit()  { localStorage.setItem(AUDIT_KEY, JSON.stringify(auditItems.slice(0,500))); }
-
-// ── UID ───────────────────────────────────────────────────────────
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+var SENDER_KEY = 'oicboard_sender';
+var AUDIT_KEY  = 'oicboard_audit_v3';
+var LOG_KEY    = 'oicboard_log_v3';
 
 // ── Helpers ───────────────────────────────────────────────────────
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function fmtDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}); }
+function dlClass(d){ if(!d) return ''; var diff=(new Date(d)-new Date())/86400000; return diff<0?'overdue':diff<=2?'soon':''; }
+function fmtTime(iso){ return new Date(iso).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true}); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+// ── Firebase Listeners ────────────────────────────────────────────
+function initFirebase() {
+  var tasksRef = db.ref('tasks');
+
+  // Real-time listener — fires instantly on ANY change from ANY device
+  tasksRef.on('value', function(snapshot) {
+    tasks = snapshot.val() || {};
+    render();
+    hideLoading();
+    setFbStatus('connected');
+    addLog('🔄 Board updated from Firebase');
+  }, function(err) {
+    addLog('Firebase error: ' + err.message);
+    setFbStatus('disconnected');
+    hideLoading();
+  });
+
+  // Monitor connection state
+  db.ref('.info/connected').on('value', function(snap) {
+    if(snap.val() === true) {
+      setFbStatus('connected');
+      addLog('✓ Connected to Firebase (real-time sync active)');
+    } else {
+      setFbStatus('disconnected');
+      addLog('⚠ Firebase disconnected — working offline');
+    }
+  });
 }
-function cap(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
-function fmtDate(d) {
-  if(!d) return '';
-  return new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+
+function setFbStatus(state) {
+  var badge = document.getElementById('fbBadge');
+  var text  = document.getElementById('fbText');
+  if(state === 'connected') {
+    badge.className = 'fb-badge';
+    text.textContent = '🔥 Live Sync ON';
+  } else if(state === 'disconnected') {
+    badge.className = 'fb-badge disconnected';
+    text.textContent = 'Offline';
+  } else {
+    badge.className = 'fb-badge connecting';
+    text.textContent = 'Connecting…';
+  }
 }
-function dlClass(d) {
-  if(!d) return '';
-  var diff=(new Date(d)-new Date())/86400000;
-  if(diff<0) return 'overdue';
-  if(diff<=2) return 'soon';
-  return '';
-}
-function now() { return new Date().toISOString(); }
-function fmtTime(iso) {
-  return new Date(iso).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true});
-}
-function fmtDateTime(iso) {
-  var d=new Date(iso);
-  return d.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})+' '+fmtTime(iso);
+
+function hideLoading() {
+  var ov = document.getElementById('loadingOverlay');
+  if(ov) { ov.style.opacity='0'; ov.style.transition='opacity .4s'; setTimeout(function(){ov.remove();},400); }
 }
 
 // ── Render ────────────────────────────────────────────────────────
 function render() {
+  var taskArr = Object.keys(tasks).map(function(k){ var t=tasks[k]; t._key=k; return t; });
+  taskArr.sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+
   ['urgent','high','routine'].forEach(function(p) {
     var col = document.getElementById('col'+cap(p));
-    var list = getFiltered(p);
+    var list = taskArr.filter(function(t){
+      if(t.priority!==p) return false;
+      if(curFilter==='all') return true;
+      if(curFilter===p) return true;
+      if(curFilter==='done') return t.done;
+      return false;
+    });
     if(!list.length) {
       col.innerHTML = '<div class="col-empty"><span>—</span><span>No tasks here</span></div>';
       return;
@@ -527,60 +557,41 @@ function render() {
   updateCounts();
 }
 
-function getFiltered(priority) {
-  return tasks.filter(function(t){
-    if(t.priority!==priority) return false;
-    if(curFilter==='all') return true;
-    if(curFilter===priority) return true;
-    if(curFilter==='pending') return !t.synced && !t.done;
-    if(curFilter==='done') return t.done;
-    return false;
-  });
-}
-
 function makeCard(t) {
   var div = document.createElement('div');
   div.className = 'task-card'+(t.done?' done':'');
-
   var dlc = t.done?'':dlClass(t.deadline);
-  var dlHtml = t.deadline
-    ? '<span class="task-deadline '+dlc+'">📅 '+fmtDate(t.deadline)+(dlc==='overdue'?' · OVERDUE':dlc==='soon'?' · Soon':'')+'</span>'
-    : '';
+  var dlHtml = t.deadline ? '<span class="task-deadline '+dlc+'">📅 '+fmtDate(t.deadline)+(dlc==='overdue'?' · OVERDUE':dlc==='soon'?' · Soon':'')+'</span>' : '';
   var asHtml = t.assignee ? '<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted)">👤 '+esc(t.assignee)+'</span>' : '';
-  var syncHtml = '<span class="task-synced '+(t.synced?'synced':'pending')+'">'+(t.synced?'✓ synced':'⏳ pending')+'</span>';
-
-  var unread = (t.messages||[]).filter(function(m){return !m.read;}).length;
+  var msgs = t.messages ? Object.values(t.messages) : [];
+  var unread = msgs.filter(function(m){return !m.read;}).length;
   var badgeHtml = unread ? '<span class="unread-badge">'+unread+'</span>' : '';
   var noteHtml = t.note ? '<div class="task-note">'+esc(t.note)+'</div>' : '';
-
+  var key = t._key;
   div.innerHTML =
     '<div class="task-header">'+
       '<div class="task-title">'+esc(t.title)+'</div>'+
       '<div class="task-actions">'+
-        '<button class="task-btn done-btn" title="'+(t.done?'Reopen':'Mark done')+'" onclick="toggleDone(\''+t.id+'\')">'+
-          (t.done?'↩':'✓')+
-        '</button>'+
+        '<button class="task-btn done-btn" onclick="toggleDone(\''+key+'\')">'+(t.done?'↩':'✓')+'</button>'+
         '<div class="chat-wrap">'+
-          '<button class="task-btn chat-btn" title="Task Chat" onclick="openChat(\''+t.id+'\')">💬</button>'+
+          '<button class="task-btn chat-btn" onclick="openChat(\''+key+'\')">💬</button>'+
           badgeHtml+
         '</div>'+
-        '<button class="task-btn" title="Edit" onclick="openEdit(\''+t.id+'\')">✎</button>'+
-        '<button class="task-btn del-btn" title="Delete" onclick="deleteTask(\''+t.id+'\')">✕</button>'+
+        '<button class="task-btn" onclick="openEdit(\''+key+'\')">✎</button>'+
+        '<button class="task-btn del-btn" onclick="deleteTask(\''+key+'\')">✕</button>'+
       '</div>'+
     '</div>'+
     noteHtml+
     '<div class="task-footer">'+
       '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+dlHtml+asHtml+'</div>'+
-      syncHtml+
     '</div>';
-
   return div;
 }
 
 function updateCounts() {
-  var active = tasks.filter(function(t){return !t.done;});
   var u=0,h=0,r=0;
-  active.forEach(function(t){
+  Object.values(tasks).forEach(function(t){
+    if(t.done) return;
     if(t.priority==='urgent') u++;
     else if(t.priority==='high') h++;
     else r++;
@@ -595,7 +606,7 @@ function updateCounts() {
 }
 
 // ── Filters ───────────────────────────────────────────────────────
-function setFilter(f,btn) {
+function setFilter(f,btn){
   curFilter=f;
   document.querySelectorAll('.filter-tab').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
@@ -607,135 +618,137 @@ function addTask() {
   var title = document.getElementById('taskTitle').value.trim();
   if(!title){ showToast('Please enter a task title.','error'); return; }
   var t = {
-    id: uid(),
     title: title,
     priority: document.getElementById('taskPriority').value,
-    deadline: document.getElementById('taskDeadline').value,
-    note: document.getElementById('taskNote').value.trim(),
-    assignee: document.getElementById('taskAssignee').value.trim(),
-    messages: [],
+    deadline: document.getElementById('taskDeadline').value || '',
+    note: document.getElementById('taskNote').value.trim() || '',
+    assignee: document.getElementById('taskAssignee').value.trim() || '',
+    messages: {},
     done: false,
-    synced: false,
-    createdAt: now(),
-    updatedAt: now()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
-  tasks.unshift(t);
-  saveTasks();
-  addLog('New task added: "'+title+'" ['+t.priority+']');
-  addAudit('created', 'Priority: '+t.priority+(t.deadline?' · Deadline: '+fmtDate(t.deadline):'')+(t.assignee?' · Assigned to: '+t.assignee:''), t.title, t.priority, t.assignee||'');
-  render();
-  showToast('Task added!','success');
-  document.getElementById('taskTitle').value='';
-  document.getElementById('taskNote').value='';
-  document.getElementById('taskAssignee').value='';
-  document.getElementById('taskDeadline').value='';
-  document.getElementById('taskPriority').value='routine';
-  if(isOnline) autoSync();
+  db.ref('tasks').push(t).then(function(){
+    addAudit('created','Priority: '+t.priority+(t.deadline?' · Deadline: '+fmtDate(t.deadline):'')+(t.assignee?' · Assigned: '+t.assignee:''), t.title, t.priority, '');
+    showToast('Task added — synced to all devices!','success');
+    document.getElementById('taskTitle').value='';
+    document.getElementById('taskNote').value='';
+    document.getElementById('taskAssignee').value='';
+    document.getElementById('taskDeadline').value='';
+    document.getElementById('taskPriority').value='routine';
+  }).catch(function(e){ showToast('Error: '+e.message,'error'); });
 }
 
 // ── Toggle Done ───────────────────────────────────────────────────
-function toggleDone(id) {
-  var t=tasks.find(function(x){return x.id===id;});
+function toggleDone(key) {
+  var t = tasks[key];
   if(!t) return;
-  t.done=!t.done; t.synced=false; t.updatedAt=now();
-  saveTasks();
-  addAudit(t.done?'resolved':'reopened', t.done?'Marked as resolved':'Reopened — marked undone', t.title, t.priority, '');
-  addLog('Task "'+(t.title.slice(0,30))+'" marked '+(t.done?'done':'undone'));
-  render();
-  if(isOnline) autoSync();
+  var newDone = !t.done;
+  db.ref('tasks/'+key).update({done:newDone, updatedAt:new Date().toISOString()}).then(function(){
+    addAudit(newDone?'resolved':'reopened', newDone?'Marked as resolved':'Reopened', t.title, t.priority, '');
+  });
 }
 
 // ── Delete Task ───────────────────────────────────────────────────
-function deleteTask(id) {
-  var t=tasks.find(function(x){return x.id===id;});
+function deleteTask(key) {
+  var t = tasks[key];
   if(!t) return;
   if(!confirm('Delete task "'+t.title+'"?')) return;
-  addAudit('deleted','Was '+t.priority+' priority'+(t.assignee?', assigned to '+t.assignee:''), t.title, t.priority, '');
-  tasks=tasks.filter(function(x){return x.id!==id;});
-  saveTasks();
-  addLog('Task deleted: "'+(t.title.slice(0,30))+'"');
-  render();
-  showToast('Task deleted.','info');
+  addAudit('deleted','Was '+t.priority+' priority', t.title, t.priority, '');
+  db.ref('tasks/'+key).remove().then(function(){
+    showToast('Task deleted.','info');
+  });
 }
 
 // ── Edit Task ─────────────────────────────────────────────────────
-function openEdit(id) {
-  var t=tasks.find(function(x){return x.id===id;});
+function openEdit(key) {
+  var t = tasks[key];
   if(!t) return;
-  document.getElementById('editId').value=t.id;
-  document.getElementById('editTitle').value=t.title;
-  document.getElementById('editPriority').value=t.priority;
+  document.getElementById('editId').value=key;
+  document.getElementById('editTitle').value=t.title||'';
+  document.getElementById('editPriority').value=t.priority||'routine';
   document.getElementById('editDeadline').value=t.deadline||'';
   document.getElementById('editNote').value=t.note||'';
   document.getElementById('editAssignee').value=t.assignee||'';
   document.getElementById('editModal').classList.add('open');
 }
-function closeModal() { document.getElementById('editModal').classList.remove('open'); }
+function closeModal(){ document.getElementById('editModal').classList.remove('open'); }
 function saveEdit() {
-  var id=document.getElementById('editId').value;
-  var t=tasks.find(function(x){return x.id===id;});
-  if(!t) return;
-  t.title=document.getElementById('editTitle').value.trim();
-  t.priority=document.getElementById('editPriority').value;
-  t.deadline=document.getElementById('editDeadline').value;
-  t.note=document.getElementById('editNote').value.trim();
-  t.assignee=document.getElementById('editAssignee').value.trim();
-  t.synced=false; t.updatedAt=now();
-  saveTasks();
-  addAudit('edited','Priority: '+t.priority+(t.deadline?' · Deadline: '+fmtDate(t.deadline):'')+(t.assignee?' · Assigned: '+t.assignee:''), t.title, t.priority, '');
-  addLog('Task updated: "'+t.title.slice(0,30)+'"');
-  closeModal();
-  render();
-  showToast('Task updated.','success');
-  if(isOnline) autoSync();
+  var key = document.getElementById('editId').value;
+  var updates = {
+    title: document.getElementById('editTitle').value.trim(),
+    priority: document.getElementById('editPriority').value,
+    deadline: document.getElementById('editDeadline').value||'',
+    note: document.getElementById('editNote').value.trim()||'',
+    assignee: document.getElementById('editAssignee').value.trim()||'',
+    updatedAt: new Date().toISOString()
+  };
+  db.ref('tasks/'+key).update(updates).then(function(){
+    addAudit('edited','Priority: '+updates.priority+(updates.deadline?' · Deadline: '+fmtDate(updates.deadline):'')+(updates.assignee?' · Assigned: '+updates.assignee:''), updates.title, updates.priority, '');
+    closeModal();
+    showToast('Task updated — synced!','success');
+  }).catch(function(e){ showToast('Error: '+e.message,'error'); });
 }
 
 // ── Chat ──────────────────────────────────────────────────────────
-function openChat(id) {
-  var t=tasks.find(function(x){return x.id===id;});
+function openChat(key) {
+  var t = tasks[key];
   if(!t) return;
-  activeChatId=id;
-  if(!t.messages) t.messages=[];
-  t.messages.forEach(function(m){m.read=true;});
-  saveTasks(); render();
-  document.getElementById('chatTitle').textContent=t.title;
-  var b=document.getElementById('chatBadge');
-  var labels={urgent:'🔴 Urgent',high:'🟠 High Priority',routine:'🟢 Routine'};
-  b.textContent=labels[t.priority]||t.priority;
-  b.className='chat-badge '+t.priority;
-  document.getElementById('chatAssignee').textContent=t.assignee?'👤 '+t.assignee:'';
-  document.getElementById('senderName').value=localStorage.getItem(SENDER_KEY)||'';
-  renderMsgs(t);
+  activeChatId = key;
+
+  // Mark messages as read
+  var msgs = t.messages ? Object.keys(t.messages) : [];
+  msgs.forEach(function(mkey){
+    if(t.messages[mkey] && !t.messages[mkey].read){
+      db.ref('tasks/'+key+'/messages/'+mkey+'/read').set(true);
+    }
+  });
+
+  document.getElementById('chatTitle').textContent = t.title;
+  var b = document.getElementById('chatBadge');
+  b.textContent = {urgent:'🔴 Urgent',high:'🟠 High Priority',routine:'🟢 Routine'}[t.priority]||t.priority;
+  b.className = 'chat-badge '+t.priority;
+  document.getElementById('chatAssigneeInfo').textContent = t.assignee ? '👤 '+t.assignee : '';
+  document.getElementById('senderName').value = localStorage.getItem(SENDER_KEY)||'';
   document.getElementById('chatOverlay').classList.add('open');
-  setTimeout(function(){
-    document.getElementById('chatInput').focus();
-    scrollMsgs();
-  },120);
+
+  // Listen for real-time chat messages in this task
+  db.ref('tasks/'+key+'/messages').on('value', function(snap){
+    if(activeChatId !== key) return;
+    renderMsgs(snap.val()||{});
+    setTimeout(scrollMsgs, 80);
+  });
+
+  setTimeout(function(){ document.getElementById('chatInput').focus(); },120);
 }
-function closeChat() {
+
+function closeChat(){
+  if(activeChatId){
+    db.ref('tasks/'+activeChatId+'/messages').off();
+  }
   document.getElementById('chatOverlay').classList.remove('open');
-  activeChatId=null;
+  activeChatId = null;
 }
-function overlayClick(e) {
-  if(e.target===document.getElementById('chatOverlay')) closeChat();
-}
-function renderMsgs(t) {
-  var cont=document.getElementById('chatMsgs');
-  var msgs=t.messages||[];
-  if(!msgs.length){
+
+function overlayClick(e){ if(e.target===document.getElementById('chatOverlay')) closeChat(); }
+
+function renderMsgs(msgsObj) {
+  var cont = document.getElementById('chatMsgs');
+  var msgArr = Object.values(msgsObj).sort(function(a,b){ return (a.ts||'').localeCompare(b.ts||''); });
+  var me = document.getElementById('senderName').value.trim();
+
+  if(!msgArr.length){
     cont.innerHTML='<div class="chat-empty-msg"><span style="font-size:36px;opacity:.25">💬</span><span>No updates yet. Be the first to post.</span></div>';
     return;
   }
-  var me=document.getElementById('senderName').value.trim();
   cont.innerHTML='';
   var lastDate='';
-  msgs.forEach(function(m){
-    var d=new Date(m.ts).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+  msgArr.forEach(function(m){
+    var d = new Date(m.ts).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
     if(d!==lastDate){
       lastDate=d;
       var sep=document.createElement('div');
-      sep.className='chat-date-sep';
-      sep.textContent=d;
+      sep.className='chat-date-sep'; sep.textContent=d;
       cont.appendChild(sep);
     }
     var isSelf=(me && m.sender===me);
@@ -753,64 +766,55 @@ function renderMsgs(t) {
     cont.appendChild(w);
   });
 }
-function scrollMsgs() {
-  var c=document.getElementById('chatMsgs');
-  c.scrollTop=c.scrollHeight;
-}
-function sendMsg() {
+
+function scrollMsgs(){ var c=document.getElementById('chatMsgs'); c.scrollTop=c.scrollHeight; }
+
+function sendMsg(){
   if(!activeChatId) return;
-  var sender=document.getElementById('senderName').value.trim();
-  var text=document.getElementById('chatInput').value.trim();
+  var sender = document.getElementById('senderName').value.trim();
+  var text   = document.getElementById('chatInput').value.trim();
   if(!sender){ document.getElementById('senderName').focus(); showToast('Enter your name first.','error'); return; }
   if(!text) return;
-  localStorage.setItem(SENDER_KEY,sender);
-  var t=tasks.find(function(x){return x.id===activeChatId;});
-  if(!t) return;
-  if(!t.messages) t.messages=[];
-  var msg={id:uid(),sender:sender,text:text,ts:now(),read:true};
-  t.messages.push(msg);
-  t.synced=false; t.updatedAt=now();
-  saveTasks();
-  addAudit('message','"'+text.slice(0,80)+(text.length>80?'…':'')+'"', t.title, t.priority, sender);
-  render();
-  document.getElementById('chatInput').value='';
-  document.getElementById('chatInput').style.height='auto';
-  renderMsgs(t);
-  scrollMsgs();
-  if(isOnline) autoSync();
+  localStorage.setItem(SENDER_KEY, sender);
+  var msgId = uid();
+  var msg = {id:msgId, sender:sender, text:text, ts:new Date().toISOString(), read:true};
+  var t = tasks[activeChatId];
+  db.ref('tasks/'+activeChatId+'/messages/'+msgId).set(msg).then(function(){
+    addAudit('message','"'+text.slice(0,80)+(text.length>80?'…':'')+'"', t?t.title:'', t?t.priority:'', sender);
+    document.getElementById('chatInput').value='';
+    document.getElementById('chatInput').style.height='auto';
+  });
 }
-function delMsg(msgId) {
+
+function delMsg(msgId){
   if(!activeChatId) return;
-  var t=tasks.find(function(x){return x.id===activeChatId;});
-  if(!t||!t.messages) return;
-  t.messages=t.messages.filter(function(m){return m.id!==msgId;});
-  t.synced=false; t.updatedAt=now();
-  saveTasks(); render(); renderMsgs(t);
+  db.ref('tasks/'+activeChatId+'/messages/'+msgId).remove();
 }
-function chatKey(e) {
+
+function chatKey(e){
   var ta=document.getElementById('chatInput');
   ta.style.height='auto';
   ta.style.height=Math.min(ta.scrollHeight,120)+'px';
   if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); }
 }
+
 document.getElementById('senderName').addEventListener('input',function(){
   if(activeChatId){
-    var t=tasks.find(function(x){return x.id===activeChatId;});
-    if(t) renderMsgs(t);
+    db.ref('tasks/'+activeChatId+'/messages').once('value',function(snap){ renderMsgs(snap.val()||{}); });
   }
 });
 
-// ── Audit Log ─────────────────────────────────────────────────────
+// ── Audit Log (local) ─────────────────────────────────────────────
+function loadAudit(){ try{ auditItems=JSON.parse(localStorage.getItem(AUDIT_KEY))||[]; }catch(e){ auditItems=[]; } }
+function saveAudit(){ localStorage.setItem(AUDIT_KEY, JSON.stringify(auditItems.slice(0,500))); }
 function addAudit(type,detail,taskTitle,priority,who){
-  auditItems.unshift({id:uid(),type:type,detail:detail||'',taskTitle:taskTitle||'',priority:priority||'',who:who||'',ts:now()});
-  saveAudit();
-  renderAudit();
+  auditItems.unshift({id:uid(),type:type,detail:detail||'',taskTitle:taskTitle||'',priority:priority||'',who:who||'',ts:new Date().toISOString()});
+  saveAudit(); renderAudit();
 }
 function setAuditFilter(f,btn){
   curAuditFilter=f;
   document.querySelectorAll('.af-btn').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  renderAudit();
+  btn.classList.add('active'); renderAudit();
 }
 function renderAudit(){
   var cont=document.getElementById('auditList');
@@ -835,39 +839,32 @@ function renderAudit(){
   });
   cont.innerHTML=html;
 }
-function clearAudit(){
-  if(!confirm('Clear all task history?')) return;
-  auditItems=[]; saveAudit(); renderAudit();
-}
+function clearAudit(){ if(!confirm('Clear all task history?')) return; auditItems=[]; saveAudit(); renderAudit(); }
 function exportCSV(){
   if(!auditItems.length){ showToast('No history to export.','error'); return; }
   var rows=[['Date','Time','Type','Task','Priority','By','Detail']];
   auditItems.forEach(function(e){
     var dt=new Date(e.ts);
-    rows.push([
-      dt.toLocaleDateString('en-PH'),
-      dt.toLocaleTimeString('en-PH',{hour12:true}),
-      e.type.toUpperCase(),e.taskTitle,e.priority,e.who,e.detail
-    ].map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}));
+    rows.push([dt.toLocaleDateString('en-PH'),dt.toLocaleTimeString('en-PH',{hour12:true}),e.type.toUpperCase(),e.taskTitle,e.priority,e.who,e.detail].map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}));
   });
   var csv=rows.map(function(r){return r.join(',');}).join('\n');
   var blob=new Blob([csv],{type:'text/csv'});
   var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');
-  a.href=url; a.download='oicboard-history-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  var a=document.createElement('a'); a.href=url; a.download='oicboard-history-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
   URL.revokeObjectURL(url);
   showToast('Exported as CSV.','success');
 }
 
-// ── Sync Log ──────────────────────────────────────────────────────
+// ── Activity Log ──────────────────────────────────────────────────
+function loadLog(){ try{ logItems=JSON.parse(localStorage.getItem(LOG_KEY))||[]; }catch(e){ logItems=[]; } }
+function saveLog(){ localStorage.setItem(LOG_KEY, JSON.stringify(logItems.slice(0,50))); }
 function addLog(msg){
   var t=new Date().toLocaleTimeString('en-PH',{hour12:false});
-  logItems.unshift({time:t,msg:msg});
-  saveLog(); renderLog();
+  logItems.unshift({time:t,msg:msg}); saveLog(); renderLog();
 }
 function renderLog(){
   var el=document.getElementById('syncLog');
-  if(!logItems.length){ el.innerHTML='<div class="log-entry"><span class="log-time">—</span><span>No sync activity yet.</span></div>'; return; }
+  if(!logItems.length){ el.innerHTML='<div class="log-entry"><span class="log-time">—</span><span>No activity yet.</span></div>'; return; }
   el.innerHTML=logItems.slice(0,20).map(function(e){
     return '<div class="log-entry"><span class="log-time">'+e.time+'</span><span>'+esc(e.msg)+'</span></div>';
   }).join('');
@@ -882,46 +879,6 @@ function switchTab(tab,btn){
   document.getElementById('panel'+cap(tab)).classList.add('active');
 }
 
-// ── Sync ──────────────────────────────────────────────────────────
-async function syncToServer(pending){
-  // Replace this block with your real API endpoint when ready
-  await new Promise(function(r){setTimeout(r,600+Math.random()*400);});
-  if(Math.random()<0.05) throw new Error('Simulated error');
-}
-async function autoSync(){
-  var pending=tasks.filter(function(t){return !t.synced;});
-  if(!pending.length) return;
-  try {
-    await syncToServer(pending);
-    pending.forEach(function(p){
-      var found=tasks.find(function(x){return x.id===p.id;});
-      if(found) found.synced=true;
-    });
-    saveTasks(); render();
-    addLog('✓ Synced '+pending.length+' task(s)');
-    showToast(pending.length+' task(s) synced.','success');
-  } catch(e){
-    addLog('✗ Sync failed: '+e.message);
-  }
-}
-async function manualSync(){
-  if(!isOnline){ showToast('You are offline.','error'); return; }
-  var btn=document.getElementById('syncBtn');
-  btn.classList.add('syncing'); btn.disabled=true;
-  addLog('Manual sync triggered…');
-  try { await autoSync(); } finally { btn.classList.remove('syncing'); btn.disabled=false; }
-}
-
-// ── Connectivity ──────────────────────────────────────────────────
-function updateStatus(){
-  isOnline=navigator.onLine;
-  var pill=document.getElementById('statusPill');
-  document.getElementById('statusText').textContent=isOnline?'Online':'Offline';
-  pill.className='status-pill '+(isOnline?'online':'offline');
-}
-window.addEventListener('online',function(){ updateStatus(); addLog('Connection restored — syncing…'); showToast('Back online! Syncing…','info'); autoSync(); });
-window.addEventListener('offline',function(){ updateStatus(); addLog('Connection lost — tasks saved locally'); showToast('Offline — tasks saved locally.','error'); });
-
 // ── Toast ─────────────────────────────────────────────────────────
 function showToast(msg,type){
   var c=document.getElementById('toastCont');
@@ -930,14 +887,15 @@ function showToast(msg,type){
   setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){t.remove();},400); },3000);
 }
 
-// ── Service Worker ────────────────────────────────────────────────
-if('serviceWorker' in navigator){
-  var swCode="const CACHE='oicboard-v2';self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./'])));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});";
-  var swBlob=new Blob([swCode],{type:'application/javascript'});
-  navigator.serviceWorker.register(URL.createObjectURL(swBlob),{scope:'./'})
-    .then(function(){ addLog('✓ Offline cache active'); })
-    .catch(function(e){ addLog('SW skipped: '+e.message); });
+// ── Connectivity ──────────────────────────────────────────────────
+function updateStatus(){
+  isOnline=navigator.onLine;
+  var pill=document.getElementById('statusPill');
+  document.getElementById('statusText').textContent=isOnline?'Internet: ON':'Internet: OFF';
+  pill.className='status-pill '+(isOnline?'online':'offline');
 }
+window.addEventListener('online', function(){ updateStatus(); addLog('Internet connection restored'); });
+window.addEventListener('offline', function(){ updateStatus(); addLog('Internet lost — Firebase will resume when reconnected'); });
 
 // ── PWA Install ───────────────────────────────────────────────────
 var deferredPrompt=null;
@@ -946,27 +904,26 @@ window.addEventListener('beforeinstallprompt',function(e){
   var b=document.createElement('div');
   b.id='installBanner';
   b.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#181c27;border:1px solid #5b8dee;border-radius:14px;padding:14px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:998;font-family:DM Sans,sans-serif;font-size:13px;color:#e8eaf0;max-width:90vw;';
-  b.innerHTML='<span style="font-size:22px">📲</span><div><div style="font-weight:600">Install OIC Board</div><div style="color:#6b7280;font-size:12px">Add to your home screen</div></div><button onclick="installApp()" style="padding:8px 16px;border-radius:8px;border:none;background:#5b8dee;color:#fff;font-weight:600;cursor:pointer;">Install</button><button onclick="document.getElementById(\'installBanner\').remove()" style="background:transparent;border:none;color:#6b7280;cursor:pointer;font-size:18px;">✕</button>';
+  b.innerHTML='<span style="font-size:22px">📲</span><div><div style="font-weight:600">Install OIC Board</div><div style="color:#6b7280;font-size:12px">Add to your home screen</div></div><button onclick="installApp()" style="padding:8px 16px;border-radius:8px;border:none;background:#5b8dee;color:#fff;font-weight:600;cursor:pointer;">Install</button><button onclick="document.getElementById(\'installBanner\').remove()" style="background:transparent;border:none;color:#6b7280;cursor:pointer;font-size:18px;margin-left:4px;">✕</button>';
   document.body.appendChild(b);
 });
 async function installApp(){
   if(!deferredPrompt) return;
   deferredPrompt.prompt();
   var r=await deferredPrompt.userChoice;
-  addLog(r.outcome==='accepted'?'✓ App installed':'Install dismissed');
+  addLog(r.outcome==='accepted'?'✓ App installed to home screen':'Install dismissed');
   deferredPrompt=null;
   var b=document.getElementById('installBanner');
   if(b) b.remove();
 }
 
 // ── Init ──────────────────────────────────────────────────────────
-loadAll();
+loadAudit();
+loadLog();
 updateStatus();
-render();
 renderLog();
 renderAudit();
-if(isOnline && tasks.some(function(t){return !t.synced;})) setTimeout(autoSync,1000);
-setInterval(function(){ if(isOnline && tasks.some(function(t){return !t.synced;})) autoSync(); },30000);
+initFirebase();
 </script>
 </body>
 </html>
